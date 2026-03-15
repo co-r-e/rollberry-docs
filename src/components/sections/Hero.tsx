@@ -2,84 +2,253 @@
 
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { RollberryLogo } from "@/components/icons/RollberryLogo";
 import { GitHubIcon } from "@/components/icons/GitHubIcon";
 import { SITE } from "@/lib/constants";
 
-function FrameCard({ delay, rotate, x }: { delay: number; rotate: number; x: number }) {
+function MockCapture() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -120, rotate: rotate - 5, x }}
-      animate={{ opacity: 1, y: 0, rotate, x }}
-      transition={{ duration: 0.8, delay, ease: "easeOut" }}
-      className="absolute h-28 w-20 rounded-lg border-2 border-primary/20 bg-white shadow-lg sm:h-36 sm:w-24"
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.6 }}
+      className="relative mx-auto mt-16 w-full max-w-2xl"
     >
-      <div className="flex h-full flex-col items-center justify-center gap-1">
-        <div className="h-2 w-10 rounded bg-neutral-200 sm:w-14" />
-        <div className="h-2 w-8 rounded bg-neutral-100 sm:w-10" />
-        <div className="h-2 w-12 rounded bg-neutral-200 sm:w-16" />
-        <div className="mt-2 h-6 w-14 rounded bg-primary-50 sm:w-18" />
+      <div className="overflow-hidden rounded-xl border border-white/20 bg-white shadow-2xl">
+        {/* Title bar */}
+        <div className="flex items-center gap-2 border-b border-neutral-100 bg-neutral-50 px-4 py-2.5">
+          <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
+          <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
+          <span className="h-3 w-3 rounded-full bg-[#28C840]" />
+          <div className="ml-3 flex-1 rounded-md bg-white px-3 py-1 text-xs text-neutral-400 border border-neutral-200">
+            https://your-awesome-site.com
+          </div>
+        </div>
+
+        {/* Viewport */}
+        <div className="relative h-64 overflow-hidden bg-white sm:h-72">
+          {/* REC overlay */}
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-md bg-black/70 px-2 py-1 backdrop-blur-sm">
+            <span
+              className="h-2 w-2 rounded-full bg-primary"
+              style={{ animation: "blink 1.2s ease-in-out infinite" }}
+            />
+            <span className="text-[10px] font-mono font-medium text-white">
+              REC
+            </span>
+          </div>
+
+          <motion.div
+            className="absolute top-3 right-3 z-10 rounded-md bg-black/70 px-2 py-1 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+          >
+            <span className="text-[10px] font-mono text-white">
+              Capturing...
+            </span>
+          </motion.div>
+
+          {/* Infinite scrolling mock page — two copies for seamless loop */}
+          <motion.div
+            animate={{ y: [0, "-50%"] }}
+            transition={{
+              duration: 12,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="p-6"
+          >
+            {[0, 1].map((copy) => (
+              <div key={copy} className="pb-6">
+                {/* Mock header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="h-4 w-28 rounded bg-neutral-800" />
+                  <div className="flex gap-3">
+                    <div className="h-3 w-12 rounded bg-neutral-200" />
+                    <div className="h-3 w-12 rounded bg-neutral-200" />
+                    <div className="h-3 w-12 rounded bg-neutral-200" />
+                  </div>
+                </div>
+                {/* Mock hero area */}
+                <div className="mb-6 rounded-lg bg-primary-50 p-6">
+                  <div className="h-5 w-48 rounded bg-primary/20 mb-3" />
+                  <div className="h-3 w-64 rounded bg-primary/10 mb-2" />
+                  <div className="h-3 w-40 rounded bg-primary/10 mb-4" />
+                  <div className="h-8 w-24 rounded-md bg-primary/20" />
+                </div>
+                {/* Mock cards */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="rounded-lg bg-neutral-50 p-4 border border-neutral-100">
+                    <div className="h-8 w-8 rounded bg-neutral-200 mb-3" />
+                    <div className="h-3 w-full rounded bg-neutral-200 mb-2" />
+                    <div className="h-3 w-4/5 rounded bg-neutral-100" />
+                  </div>
+                  <div className="rounded-lg bg-neutral-50 p-4 border border-neutral-100">
+                    <div className="h-8 w-8 rounded bg-neutral-200 mb-3" />
+                    <div className="h-3 w-full rounded bg-neutral-200 mb-2" />
+                    <div className="h-3 w-3/5 rounded bg-neutral-100" />
+                  </div>
+                  <div className="rounded-lg bg-neutral-50 p-4 border border-neutral-100">
+                    <div className="h-8 w-8 rounded bg-neutral-200 mb-3" />
+                    <div className="h-3 w-full rounded bg-neutral-200 mb-2" />
+                    <div className="h-3 w-4/5 rounded bg-neutral-100" />
+                  </div>
+                </div>
+                {/* Mock text */}
+                <div className="space-y-2 mb-6">
+                  <div className="h-3 w-full rounded bg-neutral-200" />
+                  <div className="h-3 w-11/12 rounded bg-neutral-200" />
+                  <div className="h-3 w-4/5 rounded bg-neutral-200" />
+                  <div className="h-3 w-full rounded bg-neutral-200" />
+                  <div className="h-3 w-3/5 rounded bg-neutral-100" />
+                </div>
+                {/* Mock image */}
+                <div className="h-32 w-full rounded-lg bg-neutral-100 mb-6" />
+                {/* Mock footer */}
+                <div className="space-y-2">
+                  <div className="h-3 w-full rounded bg-neutral-200" />
+                  <div className="h-3 w-3/4 rounded bg-neutral-200" />
+                  <div className="h-3 w-5/6 rounded bg-neutral-100" />
+                </div>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Scan line */}
+          <motion.div
+            className="pointer-events-none absolute left-0 right-0 h-px bg-primary/40"
+            animate={{ top: ["0%", "100%"] }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+        </div>
+
+        {/* Progress bar */}
+        <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono text-neutral-400">
+              Scrolling
+            </span>
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-neutral-200">
+              <motion.div
+                className="h-full rounded-full bg-primary"
+                animate={{ width: ["0%", "100%"] }}
+                transition={{
+                  duration: 12,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+            </div>
+            <span className="text-[10px] font-mono text-neutral-400">
+              100%
+            </span>
+          </div>
+        </div>
       </div>
+    </motion.div>
+  );
+}
+
+function TrustBar() {
+  const items = ["Zero install", "Real browser", "Open source"];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6, delay: 0.8 }}
+      className="mt-12 flex flex-wrap items-center justify-center gap-6 sm:gap-8"
+    >
+      {items.map((label, i) => (
+        <div
+          key={label}
+          className="flex items-center gap-2 text-sm text-white/70"
+        >
+          {i > 0 && (
+            <span className="mr-2 h-1 w-1 rounded-full bg-white/30" />
+          )}
+          {label}
+        </div>
+      ))}
+    </motion.div>
+  );
+}
+
+function ScrollIndicator() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.5 }}
+      className="absolute bottom-8 left-1/2 -translate-x-1/2"
+    >
+      <motion.div
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        className="flex flex-col items-center gap-2"
+      >
+        <span className="text-xs text-white/50">Scroll</span>
+        <svg
+          width="16"
+          height="24"
+          viewBox="0 0 16 24"
+          fill="none"
+          className="text-white/50"
+        >
+          <rect
+            x="1"
+            y="1"
+            width="14"
+            height="22"
+            rx="7"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <motion.rect
+            x="6.5"
+            y="5"
+            width="3"
+            height="6"
+            rx="1.5"
+            fill="currentColor"
+            animate={{ y: [5, 12, 5] }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </svg>
+      </motion.div>
     </motion.div>
   );
 }
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-20">
-      {/* Radial gradient background */}
-      <div
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(200, 16, 46, 0.06) 0%, transparent 70%)",
-        }}
-      />
-
-      {/* Falling frame cards */}
-      <div className="absolute inset-0 flex items-center justify-center -z-5 pointer-events-none">
-        <div className="relative h-80 w-80 sm:h-96 sm:w-96">
-          <FrameCard delay={0.2} rotate={-12} x={-80} />
-          <FrameCard delay={0.4} rotate={6} x={80} />
-          <FrameCard delay={0.6} rotate={-3} x={0} />
-        </div>
-      </div>
-
+    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-20 pb-24 bg-primary">
       <div className="relative z-10 flex flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <RollberryLogo className="mb-6 h-12 w-12 text-primary" />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Badge>
-            {SITE.version} &middot; {SITE.license}
-          </Badge>
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-8 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-text sm:text-5xl md:text-6xl"
+          className="mt-8 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl"
         >
           Turn any web page into a{" "}
-          <span className="text-primary">smooth scroll video</span>
+          <span className="text-white/80">smooth scroll video</span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
-          className="mt-6 max-w-xl text-lg leading-relaxed text-text-secondary sm:text-xl"
+          className="mt-6 max-w-xl text-lg leading-relaxed text-white/70 sm:text-xl"
         >
           {SITE.description}
         </motion.p>
@@ -90,18 +259,30 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-10 flex flex-col gap-4 sm:flex-row"
         >
-          <Button href="#quick-start">Get Started</Button>
           <Button
-            variant="outline"
+            variant="custom"
+            href="#quick-start"
+            className="bg-white text-primary hover:bg-white/90 active:bg-white/80"
+          >
+            Get Started
+          </Button>
+          <Button
+            variant="custom"
             href={SITE.github}
             target="_blank"
             rel="noopener noreferrer"
+            className="border-2 border-white/30 text-white hover:bg-white/10 active:bg-white/20 bg-transparent"
           >
             <GitHubIcon className="h-5 w-5" />
             View on GitHub
           </Button>
         </motion.div>
+
+        <TrustBar />
+        <MockCapture />
       </div>
+
+      <ScrollIndicator />
     </section>
   );
 }

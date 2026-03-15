@@ -1,5 +1,5 @@
+import Image from "next/image";
 import { SITE, NAV_LINKS } from "@/lib/constants";
-import { RollberryLogo } from "@/components/icons/RollberryLogo";
 import { GitHubIcon } from "@/components/icons/GitHubIcon";
 
 export function Footer() {
@@ -9,9 +9,8 @@ export function Footer() {
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <div className="mb-4 flex items-center gap-2">
-              <RollberryLogo className="h-6 w-6 text-white" />
-              <span className="text-lg font-bold text-white">{SITE.name}</span>
+            <div className="mb-4">
+              <Image src="/rollberry-logo-white.svg" alt="Rollberry" width={511} height={120} className="h-7 w-auto" />
             </div>
             <p className="text-sm leading-relaxed text-white/60">
               {SITE.description}
