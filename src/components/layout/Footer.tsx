@@ -1,5 +1,6 @@
-import Image from "next/image";
 import { SITE, NAV_LINKS } from "@/lib/constants";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 import { GitHubIcon } from "@/components/icons/GitHubIcon";
 
 export function Footer() {
@@ -10,7 +11,8 @@ export function Footer() {
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="mb-4">
-              <Image src="/rollberry-logo-white.svg" alt="Rollberry" width={511} height={120} className="h-7 w-auto" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`${basePath}/rollberry-logo-white.svg`} alt="Rollberry" width={511} height={120} className="h-7 w-auto" />
             </div>
             <p className="text-sm leading-relaxed text-white/60">
               {SITE.description}

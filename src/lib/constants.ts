@@ -5,7 +5,7 @@ export const SITE = {
     "A zero-install CLI that captures full-page scrolling videos using a real browser.",
   version: "v0.1.3",
   license: "MIT License",
-  github: "https://github.com/nicosxt/rollberry",
+  github: "https://github.com/co-r-e/rollberry",
   npm: "https://www.npmjs.com/package/rollberry",
   company: {
     name: "CORe Inc.",
