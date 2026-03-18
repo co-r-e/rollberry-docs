@@ -16,7 +16,7 @@ export function Features() {
         </p>
       </div>
 
-      <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:auto-rows-[140px]">
+      <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:auto-rows-[minmax(180px,auto)]">
         {FEATURES.map((feature, i) => (
           <BentoCard
             key={feature.title}

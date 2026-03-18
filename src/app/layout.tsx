@@ -17,6 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://co-r-e.github.io/rollberry-docs"),
   title: "Rollberry — Turn any web page into a smooth scroll video",
   description:
     "A zero-install CLI that captures full-page scrolling videos using a real browser. Open source, MIT licensed.",

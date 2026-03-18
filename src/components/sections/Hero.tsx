@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { GitHubIcon } from "@/components/icons/GitHubIcon";
+import { FloatingLogos } from "@/components/decorations/FloatingLogos";
 import { SITE } from "@/lib/constants";
 
 function MockCapture() {
@@ -180,59 +181,10 @@ function TrustBar() {
   );
 }
 
-function ScrollIndicator() {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 1.5 }}
-      className="absolute bottom-8 left-1/2 -translate-x-1/2"
-    >
-      <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        className="flex flex-col items-center gap-2"
-      >
-        <span className="text-xs text-white/50">Scroll</span>
-        <svg
-          width="16"
-          height="24"
-          viewBox="0 0 16 24"
-          fill="none"
-          className="text-white/50"
-        >
-          <rect
-            x="1"
-            y="1"
-            width="14"
-            height="22"
-            rx="7"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-          <motion.rect
-            x="6.5"
-            y="5"
-            width="3"
-            height="6"
-            rx="1.5"
-            fill="currentColor"
-            animate={{ y: [5, 12, 5] }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </svg>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 export function Hero() {
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-20 pb-24 bg-primary">
+      <FloatingLogos />
       <div className="relative z-10 flex flex-col items-center text-center">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -278,11 +230,9 @@ export function Hero() {
           </Button>
         </motion.div>
 
-        <TrustBar />
         <MockCapture />
+        <TrustBar />
       </div>
-
-      <ScrollIndicator />
     </section>
   );
 }

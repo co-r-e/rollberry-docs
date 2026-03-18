@@ -4,7 +4,19 @@ import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { GitHubIcon } from "@/components/icons/GitHubIcon";
+import { FloatingLogos } from "@/components/decorations/FloatingLogos";
 import { SITE } from "@/lib/constants";
+
+const ctaIcons = [
+  // Left side
+  { top: "5%", left: "-3%", size: 150, rotate: -20, opacity: 0.07 },
+  { top: "45%", left: "2%", size: 110, rotate: 15, opacity: 0.05 },
+  { top: "75%", left: "-2%", size: 130, rotate: 30, opacity: 0.06 },
+  // Right side
+  { top: "10%", right: "1%", size: 140, rotate: 25, opacity: 0.06 },
+  { top: "55%", right: "-2%", size: 120, rotate: -15, opacity: 0.05 },
+  { top: "80%", right: "3%", size: 100, rotate: -30, opacity: 0.07 },
+];
 
 export function OpenSourceCTA() {
   const ref = useRef<HTMLElement>(null);
@@ -20,15 +32,17 @@ export function OpenSourceCTA() {
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "linear-gradient(135deg, #C8102E 0%, #9B0D23 50%, #4A0511 100%)",
+            "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 50%, var(--primary-900) 100%)",
         }}
       />
+
+      <FloatingLogos icons={ctaIcons} />
 
       <motion.div
         initial={{ opacity: 0, y: 32 }}
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
         transition={{ duration: 0.6 }}
-        className="mx-auto max-w-2xl text-center"
+        className="relative z-10 mx-auto max-w-2xl text-center"
       >
         <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
           Built in the open

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
+import { RollberryIcon } from "@/components/icons/RollberryIcon";
 
 interface BentoCardProps {
   title: string;
@@ -26,11 +27,11 @@ export function BentoCard({ title, description, size, index }: BentoCardProps) {
       initial={{ opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: 0.5, delay: index * 0.06 }}
-      className={`group rounded-2xl border border-neutral-200 bg-surface p-6 transition-shadow hover:shadow-lg ${sizeClasses[size]} ${size === "large" ? "flex flex-col justify-between" : ""}`}
+      className={`rounded-2xl border border-neutral-200 bg-surface p-6 ${sizeClasses[size]} ${size === "large" ? "flex flex-col justify-between" : ""}`}
     >
       <div>
-        <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-primary font-bold text-sm">
-          {title.charAt(0)}
+        <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-primary">
+          <RollberryIcon className="h-5 w-5" />
         </div>
         <h3
           className={`font-bold text-text ${size === "large" ? "text-xl mb-3" : "text-base mb-2"}`}
