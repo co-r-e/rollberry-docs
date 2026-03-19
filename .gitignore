@@ -42,3 +42,5 @@ next-env.d.ts
 
 # generated
 public/docs/search-index.json
+public/llms.txt
+public/llms-full.txt

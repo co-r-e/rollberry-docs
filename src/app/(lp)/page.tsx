@@ -7,9 +7,46 @@ import { QuickStart } from "@/components/sections/QuickStart";
 import { OpenSourceCTA } from "@/components/sections/OpenSourceCTA";
 import { Footer } from "@/components/layout/Footer";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      name: "Rollberry",
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "macOS, Linux, Windows",
+      description:
+        "A zero-install CLI that captures full-page scrolling videos using a real browser. Open source, MIT licensed.",
+      url: "https://co-r-e.github.io/rollberry-docs",
+      downloadUrl: "https://www.npmjs.com/package/rollberry",
+      softwareVersion: "0.1.3",
+      license: "https://opensource.org/licenses/MIT",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      author: {
+        "@type": "Organization",
+        name: "CORe Inc.",
+        url: "https://co-r-e.com",
+      },
+    },
+    {
+      "@type": "WebSite",
+      name: "Rollberry",
+      url: "https://co-r-e.github.io/rollberry-docs",
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Hero />
       <WhatItDoes />
       <HowItWorks />

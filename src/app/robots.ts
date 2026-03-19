@@ -2,12 +2,36 @@ import type { MetadataRoute } from "next";
 
 export const dynamic = "force-static";
 
+const BASE_URL = "https://co-r-e.github.io/rollberry-docs";
+
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-    },
-    sitemap: "https://co-r-e.github.io/rollberry-docs/sitemap.xml",
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+      },
+      {
+        userAgent: "GPTBot",
+        allow: "/",
+      },
+      {
+        userAgent: "ChatGPT-User",
+        allow: "/",
+      },
+      {
+        userAgent: "Google-Extended",
+        allow: "/",
+      },
+      {
+        userAgent: "anthropic-ai",
+        allow: "/",
+      },
+      {
+        userAgent: "ClaudeBot",
+        allow: "/",
+      },
+    ],
+    sitemap: `${BASE_URL}/sitemap.xml`,
   };
 }
