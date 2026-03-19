@@ -1,0 +1,73 @@
+---
+title: Introduction
+description: Learn what Rollberry is, who it's for, and how full-page scrolling video captures can transform your workflow.
+order: 0
+---
+
+## What is Rollberry?
+
+Rollberry is a command-line tool that captures full-page scrolling videos of web pages using a real browser. Unlike traditional screenshot tools that produce static images, Rollberry records a smooth scrolling video of the entire page — from top to bottom — and outputs it as an MP4 file.
+
+Under the hood, Rollberry launches a real Chromium browser via [Playwright](https://playwright.dev/), navigates to your target URL, and records the viewport as it scrolls through the page. This means every CSS animation, lazy-loaded image, and dynamic element is captured exactly as a real user would see it.
+
+```bash
+npx rollberry capture https://example.com
+```
+
+That single command produces a polished MP4 video of the full page in seconds.
+
+## Who is Rollberry for?
+
+Rollberry is designed for anyone who needs to capture how a web page actually looks and behaves:
+
+- **Designers and developers** reviewing UI changes across pages or deployments
+- **QA teams** documenting visual state of web applications for test evidence
+- **Marketing teams** creating content that showcases landing pages or product features
+- **Agencies** delivering visual proof of completed work to clients
+- **DevOps engineers** integrating visual regression captures into CI/CD pipelines
+
+## Why video instead of screenshots?
+
+Static screenshots have significant limitations when it comes to capturing the full experience of a web page:
+
+| Aspect | Screenshots | Rollberry Video |
+|---|---|---|
+| Below-the-fold content | Requires stitching or long-screenshot hacks | Naturally captured during scroll |
+| Animations & transitions | Frozen in a single frame | Recorded in full motion |
+| Lazy-loaded images | Often missing from static captures | Loaded as the page scrolls |
+| Sticky headers & footers | Overlapping content in stitched images | Rendered correctly at every scroll position |
+| File format | Multiple PNGs or one very tall image | Single MP4 video file |
+| Sharing | Requires image viewers or zooming | Plays anywhere videos play |
+
+A scrolling video provides a faithful representation of the user experience that a static image simply cannot match.
+
+## Key features
+
+- **Zero install** — Run directly with `npx`, no global installation required
+- **Real browser rendering** — Uses Playwright with Chromium for pixel-perfect captures
+- **Localhost support** — Capture local development servers with automatic retry logic
+- **Custom viewport** — Set any resolution to match your target devices
+- **Smooth scrolling** — Configurable scroll speed and duration
+- **FPS control** — Adjust frame rate for quality vs. file size trade-offs
+- **Wait conditions** — Wait for specific selectors or a fixed delay before capturing
+- **Hide overlays** — Remove cookie banners, sticky headers, and other floating elements
+- **Debug mode** — Save individual frames as PNGs for inspection
+- **Structured logs** — JSONL output for programmatic processing
+- **MP4 output** — Industry-standard video format that plays everywhere
+
+## How it works
+
+Rollberry follows a straightforward capture pipeline:
+
+1. **Launch** — A headless Chromium browser is started via Playwright
+2. **Navigate** — The browser loads the target URL and waits for the page to be ready
+3. **Prepare** — Optional wait conditions are applied (timers, selector visibility, overlay hiding)
+4. **Capture** — The viewport is recorded as the page scrolls from top to bottom
+5. **Encode** — Captured frames are assembled into an MP4 video file
+6. **Output** — The video and metadata are saved to the output directory
+
+The entire process is automated and typically completes in under 30 seconds for most pages.
+
+## Next steps
+
+Ready to get started? Head to the [Installation](/docs/getting-started/installation) page to set up Rollberry, or jump straight to the [Quick Start](/docs/getting-started/quick-start) guide if you already have Node.js installed.

@@ -20,7 +20,7 @@ export const NAV_LINKS = {
     { label: "GitHub", href: SITE.github, external: true },
   ],
   resources: [
-    { label: "Documentation", href: SITE.github, external: true },
+    { label: "Documentation", href: "/docs" },
     { label: "npm", href: SITE.npm, external: true },
     { label: "Changelog", href: `${SITE.github}/releases`, external: true },
   ],

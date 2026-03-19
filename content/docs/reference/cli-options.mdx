@@ -1,0 +1,253 @@
+---
+title: CLI Options
+description: Complete reference for all Rollberry CLI flags and options, including types, defaults, and usage examples.
+order: 0
+---
+
+## Command syntax
+
+```bash
+npx rollberry capture <url> [options]
+```
+
+The `capture` subcommand is required. The target URL is a positional argument that must come immediately after `capture`.
+
+## Options reference
+
+The following table lists every available CLI option:
+
+| Flag | Type | Default | Description |
+|---|---|---|---|
+| `<url>` | `string` | (required) | Target URL to capture. Supports `http://`, `https://`, and `localhost` URLs. |
+| `--output, -o` | `string` | `./rollberry-output` | Output directory for the video file and metadata. Created automatically if it does not exist. |
+| `--viewport` | `string` | `1280x720` | Viewport size in `WIDTHxHEIGHT` format (pixels). |
+| `--duration, -d` | `number` | `5` | Scroll duration in seconds. Controls how long the scroll from top to bottom takes. |
+| `--fps` | `number` | `30` | Frames per second for the output video. Higher values produce smoother video at the cost of larger file size. |
+| `--wait` | `number` | `1000` | Wait time in milliseconds after page load before capture begins. |
+| `--wait-for-selector` | `string` | — | CSS selector to wait for before starting the capture. The capture will not begin until this element is visible in the DOM. |
+| `--hide-selectors` | `string` | — | Comma-separated list of CSS selectors. Matching elements are hidden (`display: none`) before capture begins. |
+| `--scroll-speed` | `number` | `1` | Scroll speed multiplier. Values less than 1 produce slower scrolling; values greater than 1 produce faster scrolling. |
+| `--debug` | `boolean` | `false` | Enable debug mode. Saves individual frames as PNG files and writes JSONL logs. |
+| `--format` | `string` | `mp4` | Output video format. |
+| `--quality` | `number` | `80` | Video quality from 1 to 100. Higher values produce better quality at larger file sizes. |
+| `--no-audio` | `boolean` | `false` | Disable audio capture. By default, audio capture is enabled. |
+| `--timeout` | `number` | `60000` | Global timeout in milliseconds. The entire capture process must complete within this time. |
+
+## Detailed option descriptions
+
+### URL (positional argument)
+
+The target URL is required and must be a valid HTTP or HTTPS URL:
+
+```bash
+# Public URL
+npx rollberry capture https://example.com
+
+# URL with path
+npx rollberry capture https://example.com/about
+
+# URL with query parameters
+npx rollberry capture "https://example.com/search?q=test"
+
+# Localhost
+npx rollberry capture http://localhost:3000
+```
+
+When the URL contains special characters (such as `?` or `&`), wrap it in quotes to prevent shell interpretation.
+
+### --output, -o
+
+Specifies where the output files are saved. The directory is created if it does not exist.
+
+```bash
+npx rollberry capture https://example.com -o ./my-captures
+npx rollberry capture https://example.com --output /tmp/rollberry-captures
+```
+
+### --viewport
+
+Sets the browser viewport dimensions. The format is `WIDTHxHEIGHT` in pixels:
+
+```bash
+# Full HD desktop
+npx rollberry capture https://example.com --viewport 1920x1080
+
+# Mobile device
+npx rollberry capture https://example.com --viewport 390x844
+
+# Ultra-wide monitor
+npx rollberry capture https://example.com --viewport 2560x1080
+```
+
+The viewport affects both the video resolution and how the page renders (responsive layouts).
+
+### --duration, -d
+
+Controls the scroll duration in seconds. This is the time it takes to scroll from the top of the page to the bottom:
+
+```bash
+# Quick 3-second scroll
+npx rollberry capture https://example.com -d 3
+
+# Slow, detailed 20-second scroll
+npx rollberry capture https://example.com --duration 20
+```
+
+Longer durations produce slower scrolling, which is useful for long pages or when you want to give viewers time to read the content.
+
+### --fps
+
+Sets the frame rate of the output video:
+
+```bash
+# Standard 30 FPS (default)
+npx rollberry capture https://example.com --fps 30
+
+# High frame rate for smooth motion
+npx rollberry capture https://example.com --fps 60
+
+# Low frame rate for smaller file size
+npx rollberry capture https://example.com --fps 15
+```
+
+Higher FPS values produce smoother video but result in larger files and longer encoding times.
+
+### --wait
+
+Adds a delay (in milliseconds) after the page loads and before the scroll capture begins:
+
+```bash
+# Wait 3 seconds for JavaScript to execute
+npx rollberry capture https://example.com --wait 3000
+
+# Minimal wait
+npx rollberry capture https://example.com --wait 500
+```
+
+This is useful for pages that load content asynchronously after the initial page load event.
+
+### --wait-for-selector
+
+Waits for a specific CSS selector to become visible before starting the capture:
+
+```bash
+# Wait for main content to render
+npx rollberry capture https://example.com --wait-for-selector ".main-content"
+
+# Wait for a data table to populate
+npx rollberry capture https://example.com --wait-for-selector "table tbody tr"
+```
+
+This option is more reliable than `--wait` for pages with dynamic content because it adapts to actual rendering time rather than using a fixed delay.
+
+### --hide-selectors
+
+Hides DOM elements matching the given CSS selectors before the capture begins:
+
+```bash
+# Hide a single element
+npx rollberry capture https://example.com --hide-selectors ".cookie-banner"
+
+# Hide multiple elements
+npx rollberry capture https://example.com \
+  --hide-selectors ".cookie-banner, .sticky-nav, #chat-widget"
+```
+
+Multiple selectors are separated by commas. See the [Hiding Overlays](/docs/guides/hiding-overlays) guide for detailed examples.
+
+### --scroll-speed
+
+Adjusts the scroll speed relative to the default:
+
+```bash
+# Half speed (slower scrolling)
+npx rollberry capture https://example.com --scroll-speed 0.5
+
+# Double speed (faster scrolling)
+npx rollberry capture https://example.com --scroll-speed 2
+```
+
+The scroll speed multiplier works in conjunction with `--duration`. A speed of `0.5` makes the scroll cover less distance per second, which can be useful if you want to capture only the upper portion of a long page within the given duration.
+
+### --debug
+
+Enables debug mode, which saves individual frames as PNG images and writes structured JSONL logs:
+
+```bash
+npx rollberry capture https://example.com --debug
+```
+
+See the [Debugging](/docs/guides/debugging) guide for details on interpreting debug output.
+
+### --format
+
+Sets the output video format:
+
+```bash
+npx rollberry capture https://example.com --format mp4
+```
+
+Currently, `mp4` is the default and primary supported format.
+
+### --quality
+
+Sets the video encoding quality on a scale of 1 to 100:
+
+```bash
+# High quality (larger file)
+npx rollberry capture https://example.com --quality 95
+
+# Low quality (smaller file)
+npx rollberry capture https://example.com --quality 50
+```
+
+The default value of 80 provides a good balance between visual quality and file size for most use cases.
+
+### --no-audio
+
+Disables audio capture:
+
+```bash
+npx rollberry capture https://example.com --no-audio
+```
+
+This is useful when you want to reduce file size or when the page has autoplaying media that you do not want in the recording.
+
+### --timeout
+
+Sets the global timeout for the entire capture process in milliseconds:
+
+```bash
+# 30-second timeout
+npx rollberry capture https://example.com --timeout 30000
+
+# 2-minute timeout for slow pages
+npx rollberry capture https://example.com --timeout 120000
+```
+
+If the capture does not complete within the timeout, Rollberry will terminate and exit with a non-zero status code.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Capture completed successfully |
+| `1` | General error (invalid arguments, network failure, etc.) |
+| `2` | Timeout — capture did not complete within the allowed time |
+| `3` | Browser error — Chromium failed to launch or crashed |
+
+## Combining options
+
+Options can be combined freely. Here is an example using several options together:
+
+```bash
+npx rollberry capture https://example.com \
+  --viewport 1920x1080 \
+  --duration 10 \
+  --fps 60 \
+  --wait 3000 \
+  --hide-selectors ".cookie-banner, .sticky-header" \
+  --quality 90 \
+  --no-audio \
+  -o ./captures/example
+```

@@ -65,6 +65,13 @@ export function OpenSourceCTA() {
           </Button>
           <Button
             variant="custom"
+            href="/docs"
+            className="border-2 border-white/30 text-white hover:bg-white/10 active:bg-white/20 bg-transparent"
+          >
+            Read the Docs
+          </Button>
+          <Button
+            variant="custom"
             href={SITE.npm}
             target="_blank"
             rel="noopener noreferrer"

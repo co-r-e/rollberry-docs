@@ -1,0 +1,6 @@
+{
+  "title": "Troubleshooting",
+  "icon": "wrench",
+  "order": 3,
+  "pages": ["common-issues"]
+}

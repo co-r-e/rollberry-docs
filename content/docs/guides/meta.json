@@ -1,0 +1,6 @@
+{
+  "title": "Guides",
+  "icon": "book",
+  "order": 1,
+  "pages": ["multi-page", "localhost", "hiding-overlays", "debugging"]
+}
