@@ -7,6 +7,8 @@ import { GitHubIcon } from "@/components/icons/GitHubIcon";
 import { FloatingLogos } from "@/components/decorations/FloatingLogos";
 import { SITE } from "@/lib/constants";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const ctaIcons = [
   // Left side
   { top: "5%", left: "-3%", size: 150, rotate: -20, opacity: 0.07 },
@@ -65,7 +67,7 @@ export function OpenSourceCTA() {
           </Button>
           <Button
             variant="custom"
-            href="/docs"
+            href={`${basePath}/docs`}
             className="border-2 border-white/30 text-white hover:bg-white/10 active:bg-white/20 bg-transparent"
           >
             Read the Docs

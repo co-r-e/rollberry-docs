@@ -3,7 +3,7 @@ export const SITE = {
   tagline: "Turn any web page into a smooth scroll video",
   description:
     "A zero-install CLI that captures full-page scrolling videos using a real browser.",
-  version: "v0.1.3",
+  version: "v0.1.8",
   license: "MIT License",
   github: "https://github.com/co-r-e/rollberry",
   npm: "https://www.npmjs.com/package/rollberry",
@@ -22,7 +22,6 @@ export const NAV_LINKS = {
   resources: [
     { label: "Documentation", href: "/docs" },
     { label: "npm", href: SITE.npm, external: true },
-    { label: "Changelog", href: `${SITE.github}/releases`, external: true },
   ],
   company: [
     { label: "CORe Inc.", href: SITE.company.url, external: true },
@@ -88,16 +87,16 @@ export const FEATURES = [
 export const QUICK_START_COMMANDS = [
   {
     comment: "Capture any public URL",
-    command: "npx rollberry capture https://your-site.com",
+    command: "rollberry capture https://your-site.com",
   },
   {
     comment: "Capture localhost with auto-retry",
-    command: "npx rollberry capture http://localhost:3000",
+    command: "rollberry capture http://localhost:3000",
   },
   {
     comment: "Custom viewport and duration",
     command:
-      "npx rollberry capture https://example.com --viewport 1920x1080 --duration 10",
+      "rollberry capture https://example.com --viewport 1920x1080 --duration 10",
   },
 ] as const;
 
@@ -105,7 +104,7 @@ export const HOW_IT_WORKS_STEPS = [
   {
     number: 1,
     title: "Run",
-    description: "Execute a single npx command with any URL — no install required.",
+    description: "Execute a single command with any URL — no install required.",
   },
   {
     number: 2,

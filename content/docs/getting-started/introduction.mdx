@@ -11,7 +11,7 @@ Rollberry is a command-line tool that captures full-page scrolling videos of web
 Under the hood, Rollberry launches a real Chromium browser via [Playwright](https://playwright.dev/), navigates to your target URL, and records the viewport as it scrolls through the page. This means every CSS animation, lazy-loaded image, and dynamic element is captured exactly as a real user would see it.
 
 ```bash
-npx rollberry capture https://example.com
+rollberry capture https://example.com
 ```
 
 That single command produces a polished MP4 video of the full page in seconds.
@@ -45,13 +45,14 @@ A scrolling video provides a faithful representation of the user experience that
 
 - **Zero install** — Run directly with `npx`, no global installation required
 - **Real browser rendering** — Uses Playwright with Chromium for pixel-perfect captures
+- **Multi-page capture** — Stitch multiple URLs into one video sequentially
 - **Localhost support** — Capture local development servers with automatic retry logic
 - **Custom viewport** — Set any resolution to match your target devices
 - **Smooth scrolling** — Configurable scroll speed and duration
 - **FPS control** — Adjust frame rate for quality vs. file size trade-offs
 - **Wait conditions** — Wait for specific selectors or a fixed delay before capturing
 - **Hide overlays** — Remove cookie banners, sticky headers, and other floating elements
-- **Debug mode** — Save individual frames as PNGs for inspection
+- **Debug frames** — Save individual frames as PNGs for inspection
 - **Structured logs** — JSONL output for programmatic processing
 - **MP4 output** — Industry-standard video format that plays everywhere
 
@@ -64,7 +65,7 @@ Rollberry follows a straightforward capture pipeline:
 3. **Prepare** — Optional wait conditions are applied (timers, selector visibility, overlay hiding)
 4. **Capture** — The viewport is recorded as the page scrolls from top to bottom
 5. **Encode** — Captured frames are assembled into an MP4 video file
-6. **Output** — The video and metadata are saved to the output directory
+6. **Output** — The video and metadata are saved to `rollberry.mp4` by default
 
 The entire process is automated and typically completes in under 30 seconds for most pages.
 

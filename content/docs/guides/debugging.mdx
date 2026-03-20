@@ -1,47 +1,42 @@
 ---
 title: Debugging
-description: Use debug mode to examine individual frames, read structured JSONL logs, and troubleshoot capture issues with Rollberry.
+description: Use debug frames, structured JSONL logs, and sidecar manifests to troubleshoot capture issues with Rollberry.
 order: 3
 ---
 
 ## Overview
 
-When a capture does not produce the expected result — a blank video, missing content, or incorrect scroll behavior — Rollberry provides several tools to help you diagnose the problem. The two primary debugging mechanisms are **debug mode** (which saves individual frames as PNG images) and **JSONL logs** (which provide a structured record of every step in the capture process).
+When a capture does not produce the expected result — a blank video, missing content, or incorrect scroll behavior — Rollberry provides several tools to help you diagnose the problem: **debug frames**, **JSONL logs**, and **sidecar manifests**.
 
-## Debug mode
+## Debug frames
 
-Enable debug mode with the `--debug` flag to save every captured frame as an individual PNG file alongside the output video:
+Use the `--debug-frames-dir` flag to save every captured frame as an individual PNG file. This is the most powerful way to see exactly what the browser was "seeing" during the capture:
 
 ```bash
-npx rollberry capture https://example.com --debug
+rollberry capture https://example.com --debug-frames-dir ./debug-output
 ```
 
-With debug mode enabled, the output directory will contain:
+The specified directory will be created if it does not exist and will contain:
 
 ```
-rollberry-output/
-├── capture-2026-03-19T10-30-00.mp4
-├── manifest.json
-├── frames/
-│   ├── frame-0001.png
-│   ├── frame-0002.png
-│   ├── frame-0003.png
-│   ├── ...
-│   └── frame-0150.png
-└── logs/
-    └── capture.jsonl
+debug-output/
+├── 00000.png
+├── 00001.png
+├── 00002.png
+├── ...
+└── 00300.png
 ```
 
-The `frames/` directory contains one PNG for every frame captured during the scroll. At the default 30 FPS with a 5-second duration, this produces 150 frames.
+The frames are numbered sequentially across the entire capture. At the default 60 FPS with a 5-second duration, this produces 300 frames.
 
 ## Examining individual frames
 
 The saved frames let you pinpoint exactly where something went wrong:
 
-**Check the first frame** — Open `frame-0001.png` to see what the page looked like before scrolling started. This helps identify:
-- Whether the page loaded correctly
-- Whether overlay elements were hidden (if using `--hide-selectors`)
-- Whether the `--wait` time was sufficient for the page to render
+**Check the first frame** — Open `00000.png` to see what the page looked like before scrolling started. This helps identify:
+- Whether the page loaded correctly.
+- Whether overlay elements were hidden (if using `--hide-selector`).
+- Whether the `--wait-for` condition was sufficient for the page to render.
 
 **Check the last frame** — Open the last frame to confirm the scroll reached the bottom of the page.
 
@@ -49,124 +44,89 @@ The saved frames let you pinpoint exactly where something went wrong:
 
 ```bash
 # On macOS, open all frames in Preview for quick review
-open ./rollberry-output/frames/frame-*.png
+open ./debug-output/*.png
 
 # On Linux, use an image viewer
-feh ./rollberry-output/frames/
+feh ./debug-output/
 ```
 
-## Reading JSONL logs
+## Structured JSONL logs
 
-When debug mode is enabled, Rollberry writes structured logs in [JSONL format](https://jsonlines.org/) (one JSON object per line). These logs record every significant event during the capture process.
+By default, Rollberry writes a sidecar log file in [JSONL format](https://jsonlines.org/) (one JSON object per line) named after your output file (e.g., `rollberry.log.jsonl`). You can specify a custom path using `--log-file`.
 
 ```bash
 # View the raw log
-cat ./rollberry-output/logs/capture.jsonl
+cat rollberry.log.jsonl
 ```
 
 Each log entry has a consistent structure:
 
 ```json
-{"timestamp":"2026-03-19T10:30:00.000Z","level":"info","event":"browser_launched","details":{"headless":true}}
-{"timestamp":"2026-03-19T10:30:00.500Z","level":"info","event":"page_navigated","details":{"url":"https://example.com","status":200}}
-{"timestamp":"2026-03-19T10:30:01.500Z","level":"info","event":"wait_complete","details":{"waitMs":1000}}
-{"timestamp":"2026-03-19T10:30:01.600Z","level":"info","event":"scroll_started","details":{"pageHeight":4200,"viewportHeight":720}}
-{"timestamp":"2026-03-19T10:30:06.600Z","level":"info","event":"scroll_complete","details":{"framesCaptures":150}}
-{"timestamp":"2026-03-19T10:30:07.200Z","level":"info","event":"video_encoded","details":{"outputPath":"capture-2026-03-19T10-30-00.mp4","durationSeconds":5}}
+{"timestamp":"2026-03-20T04:30:00.000Z","level":"info","event":"browser.open","details":{"url":"https://example.com","viewport":{"width":1440,"height":900}}}
+{"timestamp":"2026-03-20T04:30:00.500Z","level":"info","event":"render.start","details":{"frameCount":300,"fps":60,"durationSeconds":5}}
+{"timestamp":"2026-03-20T04:30:05.600Z","level":"info","event":"encode.complete","details":{"outPath":"/path/to/rollberry.mp4"}}
 ```
 
-## Filtering logs programmatically
+## Sidecar manifest
 
-Since the logs are JSONL, you can use standard command-line tools to filter and analyze them:
+Rollberry also generates a `.manifest.json` file (e.g., `rollberry.manifest.json`) containing technical metadata about the capture. This is useful for verifying the results of an automated capture process.
 
-```bash
-# Show only errors
-cat capture.jsonl | grep '"level":"error"'
-
-# Show only scroll-related events
-cat capture.jsonl | grep '"event":"scroll'
-
-# Pretty-print a specific event with jq
-cat capture.jsonl | jq 'select(.event == "page_navigated")'
-
-# Extract all event names
-cat capture.jsonl | jq -r '.event'
+```json
+{
+  "outPath": "/path/to/rollberry.mp4",
+  "frameCount": 300,
+  "durationSeconds": 5.0,
+  "pages": [
+    {
+      "url": "https://example.com",
+      "frameCount": 300,
+      "durationSeconds": 5.0,
+      "scrollHeight": 4200,
+      "truncated": false
+    }
+  ],
+  "truncated": false
+}
 ```
-
-## Common log events
-
-| Event | Description |
-|---|---|
-| `browser_launched` | Chromium browser has been started |
-| `page_navigated` | Browser navigated to the target URL |
-| `wait_complete` | Wait timer or selector wait finished |
-| `selectors_hidden` | Overlay elements have been hidden |
-| `scroll_started` | Scroll capture has begun |
-| `frame_captured` | Individual frame was captured (debug only) |
-| `scroll_complete` | Scroll has reached the end |
-| `video_encoded` | MP4 encoding is complete |
-| `capture_complete` | Entire capture process finished |
-| `error` | An error occurred during capture |
 
 ## Troubleshooting with debug output
 
-Here are some common issues and what to look for in the debug output:
+### Blank or white video
 
-**Blank or white video:**
-
-Check `frame-0001.png`. If it is blank, the page did not load before capture started. Try increasing `--wait`:
+Check `00000.png`. If it is blank, the page did not load before capture started. Try using `--wait-for` with a selector or a fixed delay:
 
 ```bash
-npx rollberry capture https://example.com --wait 5000 --debug
+rollberry capture https://example.com --wait-for ms:5000 --debug-frames-dir ./debug
 ```
 
-Check the JSONL logs for the `page_navigated` event — confirm the HTTP status was 200.
+### Content missing from the video
 
-**Content missing from the video:**
-
-If certain sections appear blank in the frames, the content may be lazy-loaded and not triggering during the scroll. Try a slower scroll speed:
+If certain sections appear blank in the frames, the content may be lazy-loaded and not triggering during the scroll. Try a slower fixed duration:
 
 ```bash
-npx rollberry capture https://example.com --scroll-speed 0.5 --debug
+# Force a slow 20-second scroll
+rollberry capture https://example.com --duration 20
 ```
 
-**Scroll does not reach the bottom:**
+### Scroll does not reach the bottom
 
-Check the `scroll_started` event in the logs for the `pageHeight` value. If the page is very long, you may need a longer duration:
+Check the `.manifest.json` or JSONL logs for the `scrollHeight` value. Rollberry has a default limit of 30,000 pixels. If your page is longer than this, it will be truncated (indicated by `truncated: true` in the manifest).
 
-```bash
-npx rollberry capture https://example.com --duration 20 --debug
-```
+### Overlay elements still visible
 
-**Overlay elements still visible:**
-
-Open `frame-0001.png` and check if the overlay is present. If it is, your CSS selector may not be matching the element. Use browser DevTools to verify the correct selector, then retry:
+Open `00000.png` and check if the overlay is present. If it is, your CSS selector may not be matching the element. Use browser DevTools to verify the correct selector, then retry:
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors ".correct-selector" \
-  --debug
+rollberry capture https://example.com \
+  --hide-selector ".correct-selector" \
+  --debug-frames-dir ./debug
 ```
 
 ## Performance considerations
 
-Debug mode significantly increases disk usage and slightly slows down the capture because every frame must be written to disk as a PNG file. For a 5-second capture at 30 FPS:
+Saving debug frames significantly increases disk usage and slightly slows down the capture because every frame must be written to disk as a PNG file. For a 5-second capture at 60 FPS:
 
-- **Without debug mode:** ~1 MP4 file (a few MB)
-- **With debug mode:** ~150 PNG files + 1 MP4 + JSONL logs (can be 100+ MB)
+- **Standard capture:** ~1 MP4 file (a few MB)
+- **With debug frames:** ~300 PNG files (can be 200+ MB)
 
-Only use `--debug` when actively troubleshooting. For production or CI/CD captures, omit the flag.
-
-## Verbose terminal output
-
-Even without `--debug`, Rollberry prints progress information to stderr. If you need to capture this output for later analysis:
-
-```bash
-npx rollberry capture https://example.com 2> capture.log
-```
-
-Or combine stdout and stderr:
-
-```bash
-npx rollberry capture https://example.com > capture.log 2>&1
-```
+Only use `--debug-frames-dir` when actively troubleshooting.

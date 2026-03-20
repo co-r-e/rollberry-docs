@@ -1,6 +1,6 @@
 ---
 title: Hiding Overlays
-description: Use the --hide-selectors option to remove cookie banners, sticky headers, floating CTAs, and other overlay elements from your captures.
+description: Use the --hide-selector option to remove cookie banners, sticky headers, floating CTAs, and other overlay elements from your captures.
 order: 2
 ---
 
@@ -8,16 +8,17 @@ order: 2
 
 Modern web pages often include overlay elements that obscure content during scrolling — cookie consent banners, sticky navigation bars, floating chat widgets, and promotional popups. These elements can make a scrolling video cluttered and distracting.
 
-Rollberry's `--hide-selectors` option lets you remove these elements before the capture begins, producing a clean video of the page content.
+Rollberry's `--hide-selector` option lets you remove these elements before the capture begins, producing a clean video of the page content.
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors ".cookie-banner, .sticky-nav"
+rollberry capture https://example.com \
+  --hide-selector ".cookie-banner" \
+  --hide-selector ".sticky-nav"
 ```
 
 ## How it works
 
-When you provide `--hide-selectors`, Rollberry injects CSS into the page that sets `display: none !important` on the matching elements. This happens after the page loads but before the scrolling capture begins.
+When you provide `--hide-selector`, Rollberry injects CSS into the page that sets `display: none !important` on the matching elements. This happens after the page loads but before the scrolling capture begins.
 
 The elements are hidden visually but remain in the DOM, so they do not affect the page layout or trigger JavaScript errors from missing elements.
 
@@ -28,57 +29,60 @@ Here are CSS selectors for the most frequently encountered overlay types:
 **Cookie consent banners:**
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors "#cookie-banner, .cookie-consent, .consent-dialog, [class*='cookie'], [id*='consent']"
+rollberry capture https://example.com \
+  --hide-selector "#cookie-banner" \
+  --hide-selector ".cookie-consent" \
+  --hide-selector ".consent-dialog"
 ```
 
 **Sticky navigation headers:**
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors "header.sticky, .fixed-header, nav.fixed"
+rollberry capture https://example.com \
+  --hide-selector "header.sticky" \
+  --hide-selector ".fixed-header" \
+  --hide-selector "nav.fixed"
 ```
 
 **Floating chat widgets:**
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors "#intercom-container, .crisp-client, .drift-widget, [class*='chat-widget']"
+rollberry capture https://example.com \
+  --hide-selector "#intercom-container" \
+  --hide-selector ".crisp-client" \
+  --hide-selector ".drift-widget"
 ```
 
 **Newsletter popups and modals:**
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors ".modal-overlay, .popup-newsletter, [class*='popup'], [class*='modal']"
+rollberry capture https://example.com \
+  --hide-selector ".modal-overlay" \
+  --hide-selector ".popup-newsletter"
 ```
 
-**Floating CTAs and back-to-top buttons:**
+## Hiding multiple elements
+
+The `--hide-selector` flag is **repeatable**. You can provide it multiple times to hide different elements:
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors ".floating-cta, .back-to-top, [class*='float']"
+rollberry capture https://example.com \
+  --hide-selector ".cookie-banner" \
+  --hide-selector ".sticky-nav" \
+  --hide-selector "#chat-widget" \
+  --hide-selector ".modal-overlay"
 ```
 
-## Combining multiple selectors
-
-The `--hide-selectors` flag accepts a comma-separated list of CSS selectors, just like a CSS selector list. You can combine as many selectors as needed:
-
-```bash
-npx rollberry capture https://example.com \
-  --hide-selectors ".cookie-banner, .sticky-nav, #chat-widget, .modal-overlay, .floating-cta"
-```
-
-Each selector is independent — if one does not match any element, it is simply ignored without causing an error.
+Each selector is independent — if one does not match any element on a specific page, it is simply ignored without causing an error.
 
 ## Finding the right selectors
 
 To identify which selectors to use for a specific page, open the page in your browser's DevTools and inspect the overlay elements:
 
-1. Open the target URL in Chrome or another browser
-2. Right-click on the overlay element and select **Inspect**
-3. Note the element's `id`, `class`, or other attributes
-4. Build a CSS selector that targets that element
+1. Open the target URL in Chrome or another browser.
+2. Right-click on the overlay element and select **Inspect**.
+3. Note the element's `id`, `class`, or other attributes.
+4. Build a CSS selector that targets that element.
 
 Common patterns to look for:
 
@@ -97,12 +101,9 @@ CSS attribute selectors are powerful for matching elements that use dynamic clas
 
 ```bash
 # Match any element with "cookie" in its class name
-npx rollberry capture https://example.com \
-  --hide-selectors "[class*='cookie'], [class*='consent'], [class*='overlay']"
-
-# Match elements with specific data attributes
-npx rollberry capture https://example.com \
-  --hide-selectors "[data-testid='cookie-popup'], [data-role='modal']"
+rollberry capture https://example.com \
+  --hide-selector "[class*='cookie']" \
+  --hide-selector "[class*='consent']"
 ```
 
 ## Handling third-party overlays
@@ -120,21 +121,14 @@ Many overlays are injected by third-party scripts (analytics, chat, A/B testing)
 | OneTrust | `#onetrust-consent-sdk` |
 | Google Consent | `[class*='fc-consent']` |
 
-Example combining several third-party overlay selectors:
-
-```bash
-npx rollberry capture https://example.com \
-  --hide-selectors "#CybotCookiebotDialog, #intercom-container, #hubspot-messages-iframe-container, .crisp-client"
-```
-
 ## Testing selectors with debug mode
 
-If you are unsure whether your selectors are working correctly, combine `--hide-selectors` with `--debug` to inspect individual frames:
+If you are unsure whether your selectors are working correctly, use `--debug-frames-dir` to inspect individual frames:
 
 ```bash
-npx rollberry capture https://example.com \
-  --hide-selectors ".cookie-banner, .sticky-nav" \
-  --debug
+rollberry capture https://example.com \
+  --hide-selector ".cookie-banner" \
+  --debug-frames-dir ./debug-output
 ```
 
-Debug mode saves each frame as a PNG image. Open the first few frames to verify that the overlay elements have been removed before the scroll begins. See the [Debugging](/docs/guides/debugging) guide for more details on debug mode.
+Debug frames save each frame as a PNG image. Open the first few frames to verify that the overlay elements have been removed before the scroll begins. See the [Debugging](/docs/guides/debugging) guide for more details.

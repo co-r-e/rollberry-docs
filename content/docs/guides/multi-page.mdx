@@ -1,72 +1,78 @@
 ---
 title: Capturing Multiple Pages
-description: Learn how to capture multiple web pages sequentially using shell scripts, organize output by page, and build batch capture workflows.
+description: Learn how to capture multiple web pages into a single video file or organize them into separate captures using batch workflows.
 order: 0
 ---
 
 ## Overview
 
-Rollberry captures one URL per invocation. To capture multiple pages, you can use shell scripting to run several captures in sequence. This approach gives you full control over per-page options and output organization.
+Rollberry supports capturing multiple URLs in two ways:
 
-## Basic sequential captures
+1. **Native stitching:** Provide multiple URLs to a single command to create one continuous video.
+2. **Batch scripts:** Use shell scripting to capture many pages as separate video files.
 
-The simplest approach is to run multiple commands one after another:
+## Native multi-page capture
+
+You can provide multiple URLs as positional arguments. Rollberry will capture them sequentially and stitch them into a single MP4 file:
 
 ```bash
-npx rollberry capture https://example.com -o ./captures/homepage
-npx rollberry capture https://example.com/about -o ./captures/about
-npx rollberry capture https://example.com/pricing -o ./captures/pricing
-npx rollberry capture https://example.com/blog -o ./captures/blog
+rollberry capture \
+  https://example.com \
+  https://example.com/about \
+  https://example.com/pricing \
+  --out documentation.mp4
 ```
 
-Each capture gets its own output directory, keeping videos organized by page.
+### Adding pauses between pages
 
-## Shell script for batch captures
+Use the `--page-gap` option to add a static pause (in seconds) between each page capture. The video will hold on the last frame of the previous page before transitioning to the next:
 
-For repeatable workflows, create a shell script:
+```bash
+# Add a 1.5-second pause between each URL
+rollberry capture \
+  https://site.com/page1 \
+  https://site.com/page2 \
+  --page-gap 1.5
+```
+
+## Batch captures (separate files)
+
+If you need each page as an individual video file, use a shell script to invoke Rollberry multiple times.
+
+### Basic sequential captures
+
+```bash
+rollberry capture https://example.com --out ./homepage.mp4
+rollberry capture https://example.com/about --out ./about.mp4
+rollberry capture https://example.com/pricing --out ./pricing.mp4
+```
+
+### Loop-based batch capture
+
+For many pages, use a loop in a shell script:
 
 ```bash
 #!/bin/bash
-# capture-all.sh — Capture all key pages
+# capture-all.sh
 
 BASE_URL="https://example.com"
-OUTPUT_DIR="./captures"
-VIEWPORT="1920x1080"
-DURATION=8
-
 PAGES=(
   "/"
   "/about"
   "/pricing"
-  "/features"
   "/blog"
-  "/contact"
 )
 
 for page in "${PAGES[@]}"; do
-  # Create a safe directory name from the path
-  dir_name=$(echo "$page" | sed 's/\//-/g' | sed 's/^-//' | sed 's/-$//')
-  dir_name=${dir_name:-"homepage"}
+  # Create a safe file name from the path
+  file_name=$(echo "$page" | sed 's/\//-/g' | sed 's/^-//' | sed 's/-$//')
+  file_name=${file_name:-"homepage"}
 
   echo "Capturing: ${BASE_URL}${page}"
-  npx rollberry capture "${BASE_URL}${page}" \
-    --viewport "$VIEWPORT" \
-    --duration "$DURATION" \
-    -o "${OUTPUT_DIR}/${dir_name}"
-
-  if [ $? -ne 0 ]; then
-    echo "Warning: Failed to capture ${BASE_URL}${page}"
-  fi
+  rollberry capture "${BASE_URL}${page}" \
+    --viewport "1920x1080" \
+    --out "./captures/${file_name}.mp4"
 done
-
-echo "All captures complete. Output in ${OUTPUT_DIR}/"
-```
-
-Make the script executable and run it:
-
-```bash
-chmod +x capture-all.sh
-./capture-all.sh
 ```
 
 ## Multi-viewport captures
@@ -75,7 +81,7 @@ A common use case is capturing the same page at different viewport sizes for res
 
 ```bash
 #!/bin/bash
-# capture-responsive.sh — Capture a page at multiple viewports
+# capture-responsive.sh
 
 URL="$1"
 if [ -z "$URL" ]; then
@@ -83,11 +89,8 @@ if [ -z "$URL" ]; then
   exit 1
 fi
 
-OUTPUT_DIR="./responsive-captures"
-
 declare -A VIEWPORTS=(
-  ["desktop"]="1920x1080"
-  ["laptop"]="1366x768"
+  ["desktop"]="1440x900"
   ["tablet"]="768x1024"
   ["mobile"]="390x844"
 )
@@ -95,125 +98,32 @@ declare -A VIEWPORTS=(
 for name in "${!VIEWPORTS[@]}"; do
   size="${VIEWPORTS[$name]}"
   echo "Capturing ${name} (${size})..."
-  npx rollberry capture "$URL" \
+  rollberry capture "$URL" \
     --viewport "$size" \
-    --duration 8 \
-    -o "${OUTPUT_DIR}/${name}"
+    --out "./responsive/${name}.mp4"
 done
-
-echo "Responsive captures complete."
-```
-
-Usage:
-
-```bash
-./capture-responsive.sh https://your-site.com
-```
-
-This produces a directory structure like:
-
-```
-responsive-captures/
-├── desktop/
-│   ├── capture-2026-03-19T10-30-00.mp4
-│   └── manifest.json
-├── laptop/
-│   ├── capture-2026-03-19T10-30-05.mp4
-│   └── manifest.json
-├── tablet/
-│   ├── capture-2026-03-19T10-30-10.mp4
-│   └── manifest.json
-└── mobile/
-    ├── capture-2026-03-19T10-30-15.mp4
-    └── manifest.json
-```
-
-## Organizing output
-
-When capturing many pages, a consistent output structure helps with later review. Here are some recommended patterns:
-
-**By date and page:**
-
-```bash
-OUTPUT_DIR="./captures/$(date +%Y-%m-%d)"
-npx rollberry capture https://example.com -o "${OUTPUT_DIR}/homepage"
-npx rollberry capture https://example.com/about -o "${OUTPUT_DIR}/about"
-```
-
-**By project and environment:**
-
-```bash
-npx rollberry capture https://staging.example.com -o ./captures/staging/homepage
-npx rollberry capture https://example.com -o ./captures/production/homepage
-```
-
-**By Git commit (useful for visual regression):**
-
-```bash
-COMMIT=$(git rev-parse --short HEAD)
-npx rollberry capture http://localhost:3000 -o "./captures/${COMMIT}"
-```
-
-## Error handling in batch scripts
-
-When running many captures, some may fail due to network issues or page errors. Use proper error handling to ensure one failure does not stop the entire batch:
-
-```bash
-#!/bin/bash
-# capture-with-retry.sh
-
-capture_with_retry() {
-  local url="$1"
-  local output="$2"
-  local max_retries=3
-  local attempt=1
-
-  while [ $attempt -le $max_retries ]; do
-    echo "Attempt ${attempt}/${max_retries}: ${url}"
-    npx rollberry capture "$url" -o "$output" --timeout 30000
-
-    if [ $? -eq 0 ]; then
-      echo "Success: ${url}"
-      return 0
-    fi
-
-    echo "Failed attempt ${attempt} for ${url}"
-    attempt=$((attempt + 1))
-    sleep 2
-  done
-
-  echo "Error: All retries failed for ${url}"
-  return 1
-}
-
-# Usage
-capture_with_retry "https://example.com" "./captures/homepage"
-capture_with_retry "https://example.com/about" "./captures/about"
 ```
 
 ## Parallel captures
 
-If you need to capture many pages quickly and your system has sufficient resources, you can run captures in parallel using background processes:
+If you need to capture many pages quickly, you can run captures in parallel. Keep in mind that each Rollberry instance launches its own browser, consuming memory and CPU.
 
 ```bash
 #!/bin/bash
-# capture-parallel.sh — Run up to N captures in parallel
+# capture-parallel.sh — Run up to 3 captures in parallel
 
 MAX_PARALLEL=3
 URLS=(
-  "https://example.com"
-  "https://example.com/about"
-  "https://example.com/pricing"
-  "https://example.com/features"
-  "https://example.com/blog"
+  "https://site.com/1"
+  "https://site.com/2"
+  "https://site.com/3"
+  "https://site.com/4"
 )
 
 running=0
 for url in "${URLS[@]}"; do
-  dir_name=$(echo "$url" | sed 's|https://example.com||' | sed 's/\//-/g' | sed 's/^-//')
-  dir_name=${dir_name:-"homepage"}
-
-  npx rollberry capture "$url" -o "./captures/${dir_name}" &
+  # Background the command
+  rollberry capture "$url" --out "./video-$(date +%s%N).mp4" &
   running=$((running + 1))
 
   if [ $running -ge $MAX_PARALLEL ]; then

@@ -9,7 +9,7 @@ order: 1
 Rollberry fully supports capturing pages served from `localhost` and other local addresses. This makes it easy to capture your application during development without deploying to a staging server first.
 
 ```bash
-npx rollberry capture http://localhost:3000
+rollberry capture http://localhost:3000
 ```
 
 ## How localhost capture works
@@ -18,10 +18,10 @@ When Rollberry detects a `localhost` or `127.0.0.1` URL, it enables automatic re
 
 The retry behavior works as follows:
 
-1. Rollberry attempts to connect to the local URL
-2. If the connection is refused, it waits briefly and retries
-3. This continues for up to the configured timeout (default: 60 seconds)
-4. Once the server responds, capture proceeds normally
+1. Rollberry attempts to connect to the local URL.
+2. If the connection is refused, it waits briefly and retries.
+3. This continues for up to the configured timeout (default: 30,000ms / 30 seconds).
+4. Once the server responds, capture proceeds normally.
 
 This means you can start your dev server and Rollberry at the same time without worrying about race conditions.
 
@@ -32,11 +32,11 @@ Here are typical commands for capturing pages from popular development framework
 **Next.js:**
 
 ```bash
-# Start the dev server (in one terminal)
+# Start the dev server
 npm run dev
 
-# Capture (in another terminal)
-npx rollberry capture http://localhost:3000 --wait 2000
+# Capture — Next.js defaults to port 3000
+rollberry capture http://localhost:3000 --wait-for ms:2000
 ```
 
 **Vite (React, Vue, Svelte):**
@@ -46,17 +46,7 @@ npx rollberry capture http://localhost:3000 --wait 2000
 npm run dev
 
 # Capture — Vite defaults to port 5173
-npx rollberry capture http://localhost:5173
-```
-
-**Nuxt:**
-
-```bash
-# Start Nuxt dev server
-npm run dev
-
-# Capture — Nuxt defaults to port 3000
-npx rollberry capture http://localhost:3000 --wait 2000
+rollberry capture http://localhost:5173
 ```
 
 **Astro:**
@@ -66,27 +56,7 @@ npx rollberry capture http://localhost:3000 --wait 2000
 npm run dev
 
 # Capture — Astro defaults to port 4321
-npx rollberry capture http://localhost:4321
-```
-
-**Ruby on Rails:**
-
-```bash
-# Start Rails server
-bin/rails server
-
-# Capture — Rails defaults to port 3000
-npx rollberry capture http://localhost:3000
-```
-
-**Django:**
-
-```bash
-# Start Django dev server
-python manage.py runserver
-
-# Capture — Django defaults to port 8000
-npx rollberry capture http://localhost:8000
+rollberry capture http://localhost:4321
 ```
 
 ## Starting server and capture together
@@ -101,37 +71,14 @@ You can use shell scripting to start your development server and capture in a si
 npm run dev &
 DEV_PID=$!
 
-# Give the server a moment to initialize
-sleep 3
-
-# Run the capture
-npx rollberry capture http://localhost:3000 \
-  --wait 2000 \
+# Run the capture (Rollberry will wait up to 30s for the server)
+rollberry capture http://localhost:3000 \
+  --wait-for ms:2000 \
   --duration 8 \
-  -o ./dev-captures
+  --out ./dev-capture.mp4
 
 # Stop the dev server
 kill $DEV_PID
-```
-
-For production-like captures, consider using a production build instead:
-
-```bash
-#!/bin/bash
-# Build and serve, then capture
-
-npm run build
-npx serve out -l 3000 &
-SERVE_PID=$!
-
-sleep 2
-
-npx rollberry capture http://localhost:3000 \
-  --wait 1000 \
-  --duration 8 \
-  -o ./production-captures
-
-kill $SERVE_PID
 ```
 
 ## Custom ports and addresses
@@ -140,13 +87,13 @@ If your server runs on a non-default port, simply specify the full URL:
 
 ```bash
 # Custom port
-npx rollberry capture http://localhost:8080
+rollberry capture http://localhost:8080
 
 # Explicit IPv4 loopback
-npx rollberry capture http://127.0.0.1:3000
+rollberry capture http://127.0.0.1:3000
 
 # IPv6 loopback
-npx rollberry capture http://[::1]:3000
+rollberry capture http://[::1]:3000
 ```
 
 ## Handling slow-starting servers
@@ -154,51 +101,29 @@ npx rollberry capture http://[::1]:3000
 Some servers take longer to start, especially in development mode with hot module replacement (HMR) initialization. If Rollberry times out before your server is ready, increase the timeout:
 
 ```bash
-# Extend timeout to 120 seconds
-npx rollberry capture http://localhost:3000 --timeout 120000
+# Extend timeout to 60 seconds
+rollberry capture http://localhost:3000 --timeout 60000
 ```
 
 You can also add an explicit wait time after the page loads to ensure all client-side hydration and data fetching is complete:
 
 ```bash
 # Wait 5 seconds after page load before capturing
-npx rollberry capture http://localhost:3000 --wait 5000
+rollberry capture http://localhost:3000 --wait-for ms:5000
 ```
 
 ## Waiting for specific content
 
-If your local app loads data asynchronously, use `--wait-for-selector` to ensure the content is visible before the scroll capture begins:
+If your local app loads data asynchronously, use `--wait-for selector:<css>` to ensure the content is visible before the scroll capture begins:
 
 ```bash
 # Wait for the main content area to render
-npx rollberry capture http://localhost:3000 \
-  --wait-for-selector ".main-content"
+rollberry capture http://localhost:3000 \
+  --wait-for "selector:.main-content"
 
 # Wait for a data table to populate
-npx rollberry capture http://localhost:3000/dashboard \
-  --wait-for-selector "table tbody tr"
+rollberry capture http://localhost:3000/dashboard \
+  --wait-for "selector:table tbody tr"
 ```
 
 This is more reliable than a fixed wait time because it adapts to however long the data actually takes to load.
-
-## Troubleshooting localhost captures
-
-**Connection refused immediately:**
-
-Make sure your development server is running and listening on the expected port. Check that you are using `http://` (not `https://`) unless your local server is configured with TLS.
-
-**Blank or incomplete page:**
-
-Increase the `--wait` time to give client-side JavaScript more time to render:
-
-```bash
-npx rollberry capture http://localhost:3000 --wait 5000
-```
-
-**HTTPS localhost:**
-
-If your local server uses HTTPS with a self-signed certificate, Chromium will block the page by default. Rollberry handles this by configuring the browser to accept self-signed certificates for localhost addresses.
-
-**Server on a different network interface:**
-
-If your server binds to a specific network interface (e.g., `0.0.0.0`), you can use either `localhost` or `127.0.0.1` to access it. If the server binds only to a specific IP, use that IP in the URL.

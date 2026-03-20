@@ -28,7 +28,7 @@ export function Footer() {
               {NAV_LINKS.product.map((link) => (
                 <li key={link.label}>
                   <a
-                    href={link.href}
+                    href={"external" in link && link.external ? link.href : `${basePath}${link.href}`}
                     {...("external" in link && link.external
                       ? { target: "_blank", rel: "noopener noreferrer" }
                       : {})}
@@ -50,7 +50,7 @@ export function Footer() {
               {NAV_LINKS.resources.map((link) => (
                 <li key={link.label}>
                   <a
-                    href={link.href}
+                    href={"external" in link && link.external ? link.href : `${basePath}${link.href}`}
                     {...("external" in link && link.external
                       ? { target: "_blank", rel: "noopener noreferrer" }
                       : {})}
@@ -72,7 +72,7 @@ export function Footer() {
               {NAV_LINKS.company.map((link) => (
                 <li key={link.label}>
                   <a
-                    href={link.href}
+                    href={"external" in link && link.external ? link.href : `${basePath}${link.href}`}
                     {...("external" in link && link.external
                       ? { target: "_blank", rel: "noopener noreferrer" }
                       : {})}
