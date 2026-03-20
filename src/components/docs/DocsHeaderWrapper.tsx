@@ -76,13 +76,20 @@ export function DocsHeaderWrapper() {
       >
         {mounted ? (
           isDark ? (
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-              <circle cx="9" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M9 1.5V3M9 15V16.5M1.5 9H3M15 9H16.5M3.7 3.7L4.75 4.75M13.25 13.25L14.3 14.3M14.3 3.7L13.25 4.75M4.75 13.25L3.7 14.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
             </svg>
           ) : (
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-              <path d="M15.5 10.4a7 7 0 01-7.9-7.9A7 7 0 109 16a7 7 0 006.5-5.6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
             </svg>
           )
         ) : (
@@ -99,10 +106,10 @@ export function DocsHeaderWrapper() {
         className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium no-underline transition-colors hover:bg-[var(--docs-surface)] sm:flex"
         style={{ color: "var(--docs-text-secondary)" }}
       >
-        Back to site
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-          <path d="M4.5 2.5L8.5 6L4.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M7.5 9.5L3.5 6L7.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
+        Back to site
       </Link>
     </div>
   );

@@ -57,9 +57,9 @@ export function DocsLayoutShell({
         {/* Main content area */}
         <main
           id="docs-content"
-          className="min-w-0 flex-1 lg:ml-[var(--docs-sidebar-width)] xl:mr-[var(--docs-toc-width)]"
+          className="min-w-0 flex-1"
         >
-          <div className="mx-auto max-w-3xl px-6 py-8">
+          <div className="w-full max-w-3xl px-6 py-8 lg:px-10">
             {/* Desktop Breadcrumbs */}
             {breadcrumbs.length > 0 && (
               <div className="hidden lg:block">
@@ -82,7 +82,7 @@ export function DocsLayoutShell({
               color: "var(--docs-text-secondary)",
             }}
           >
-            &copy; 2025{" "}
+            &copy; 2026{" "}
             <a
               href="https://co-r-e.com"
               target="_blank"

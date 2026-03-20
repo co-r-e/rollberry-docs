@@ -45,7 +45,7 @@ export function TableOfContents({ entries }: TableOfContentsProps) {
 
   return (
     <aside
-      className="scrollbar-hide fixed right-0 top-[var(--docs-header-height)] hidden h-[calc(100vh-var(--docs-header-height))] w-[var(--docs-toc-width)] overflow-y-auto pb-8 pt-6 pr-4 pl-2 xl:block"
+      className="scrollbar-hide sticky top-[var(--docs-header-height)] hidden h-[calc(100vh-var(--docs-header-height))] w-[var(--docs-toc-width)] flex-none overflow-y-auto pb-8 pt-6 pr-4 pl-2 xl:block"
     >
       <p
         className="mb-3 text-xs font-semibold uppercase tracking-wider"

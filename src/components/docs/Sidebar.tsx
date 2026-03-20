@@ -8,7 +8,7 @@ interface SidebarProps {
 export function Sidebar({ sections }: SidebarProps) {
   return (
     <aside
-      className="scrollbar-hide fixed top-[var(--docs-header-height)] hidden h-[calc(100vh-var(--docs-header-height))] w-[var(--docs-sidebar-width)] overflow-y-auto pb-8 pt-6 pl-4 pr-2 lg:block"
+      className="scrollbar-hide sticky top-[var(--docs-header-height)] hidden h-[calc(100vh-var(--docs-header-height))] w-[var(--docs-sidebar-width)] flex-none overflow-y-auto pb-8 pt-6 pl-4 pr-2 lg:block"
       style={{ borderRight: "1px solid var(--docs-border)" }}
     >
       <nav aria-label="Docs sidebar" className="space-y-2">
