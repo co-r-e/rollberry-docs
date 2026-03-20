@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Heading } from "./Heading";
 import { CodeBlock } from "./CodeBlock";
 import { Callout } from "./Callout";
@@ -11,6 +12,14 @@ import { ApiTable } from "./ApiTable";
 import { Badge } from "./Badge";
 import { FileTree } from "./FileTree";
 import { Image } from "./Image";
+
+function MdxLink(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const { href, children, ...rest } = props;
+  if (href && href.startsWith("/")) {
+    return <Link href={href} {...rest}>{children}</Link>;
+  }
+  return <a href={href} {...rest}>{children}</a>;
+}
 
 export { Accordion, AccordionItem } from "./Accordion";
 export { ApiTable } from "./ApiTable";
@@ -42,6 +51,7 @@ export const mdxComponents: Record<string, React.ComponentType<any>> = {
   table: Table,
   pre: CodeBlock,
   img: Image,
+  a: MdxLink,
   Callout,
   Steps,
   Tabs,
