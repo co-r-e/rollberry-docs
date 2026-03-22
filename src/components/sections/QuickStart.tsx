@@ -44,7 +44,7 @@ export function QuickStart() {
             Quick Start
           </h2>
           <p className="mt-4 text-lg text-neutral-400">
-            Copy, paste, capture.
+            Copy, paste, capture, or render.
           </p>
         </div>
 

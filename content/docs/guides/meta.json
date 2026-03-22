@@ -2,5 +2,11 @@
   "title": "Guides",
   "icon": "book",
   "order": 1,
-  "pages": ["multi-page", "localhost", "hiding-overlays", "debugging"]
+  "pages": [
+    "project-rendering",
+    "multi-page",
+    "localhost",
+    "hiding-overlays",
+    "debugging"
+  ]
 }

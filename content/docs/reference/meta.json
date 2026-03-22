@@ -2,5 +2,11 @@
   "title": "Reference",
   "icon": "code",
   "order": 2,
-  "pages": ["cli-options", "output-artifacts", "configuration"]
+  "pages": [
+    "cli-options",
+    "output-artifacts",
+    "project-file",
+    "configuration",
+    "node-api"
+  ]
 }

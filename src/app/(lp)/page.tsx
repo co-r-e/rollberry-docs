@@ -6,6 +6,7 @@ import { OutputPreview } from "@/components/sections/OutputPreview";
 import { QuickStart } from "@/components/sections/QuickStart";
 import { OpenSourceCTA } from "@/components/sections/OpenSourceCTA";
 import { Footer } from "@/components/layout/Footer";
+import { SITE } from "@/lib/constants";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -16,10 +17,10 @@ const jsonLd = {
       applicationCategory: "DeveloperApplication",
       operatingSystem: "macOS, Linux, Windows",
       description:
-        "A zero-install CLI that captures full-page scrolling videos using a real browser. Open source, MIT licensed.",
+        "An open-source CLI and Node API for real-browser captures and project-driven renders with structured sidecar artifacts.",
       url: "https://co-r-e.github.io/rollberry-docs",
       downloadUrl: "https://www.npmjs.com/package/rollberry",
-      softwareVersion: "0.1.3",
+      softwareVersion: SITE.version.replace(/^v/, ""),
       license: "https://opensource.org/licenses/MIT",
       offers: {
         "@type": "Offer",

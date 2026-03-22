@@ -50,8 +50,8 @@ export function OpenSourceCTA() {
           Built in the open
         </h2>
         <p className="mt-4 text-lg leading-relaxed text-white/80">
-          Rollberry is free, open-source software under the MIT License.
-          Contributions, issues, and stars are always welcome.
+          Rollberry ships as an MIT-licensed CLI and Node API. Contributions,
+          issues, and production feedback are welcome.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

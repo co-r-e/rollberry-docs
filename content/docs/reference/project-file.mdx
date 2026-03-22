@@ -1,0 +1,164 @@
+---
+title: Project File
+description: Field-by-field reference for rollberry.project.json, including defaults, scenes, actions, timeline steps, and outputs.
+order: 2
+---
+
+## Top-level fields
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `$schema` | `string` | no | Usually `./rollberry.project.schema.json` |
+| `schemaVersion` | `1` | no | Current supported schema version |
+| `name` | `string` | no | Human-readable project name |
+| `summaryManifest` | `string` | no | Output path for the render summary |
+| `defaults` | `object` | no | Shared scene defaults |
+| `scenes` | `array` | yes | Non-empty array |
+| `outputs` | `array` | no | Named outputs; omitted means one default MP4 output |
+
+## defaults
+
+Supported fields:
+
+- `viewport`
+- `fps`
+- `duration`
+- `motion`
+- `timeoutMs`
+- `waitFor`
+- `hideSelectors`
+- `holdAfterSeconds`
+
+## scenes
+
+Each scene supports:
+
+- `name`
+- `url`
+- `duration`
+- `motion`
+- `waitFor`
+- `hideSelectors`
+- `holdAfterSeconds`
+- `actions`
+- `timeline`
+
+## actions
+
+Setup actions run before capture starts for the scene.
+
+Supported action types:
+
+- `wait`
+- `click`
+- `hover`
+- `press`
+- `type`
+- `scroll-to`
+
+Examples:
+
+```json
+[
+  { "type": "wait", "ms": 300 },
+  { "type": "click", "selector": "[data-open-menu]" },
+  { "type": "type", "selector": "#search", "text": "Rollberry" }
+]
+```
+
+## timeline
+
+Timeline steps appear during the final video.
+
+Supported timeline step types:
+
+- `pause`
+- `wait`
+- `scroll`
+- `click`
+- `hover`
+- `press`
+- `type`
+- `scroll-to`
+
+### scroll targets
+
+Scroll timeline steps must define exactly one target:
+
+- `to`
+- `by`
+- `toSelector`
+
+Examples:
+
+```json
+{ "type": "scroll", "to": "bottom", "duration": "auto" }
+{ "type": "scroll", "by": 720, "duration": 0.8 }
+{ "type": "scroll", "toSelector": "#pricing", "duration": 1.2, "block": "center" }
+```
+
+## outputs
+
+Each output supports:
+
+- `name`
+- `out`
+- `format`
+- `manifest`
+- `logFile`
+- `viewport`
+- `fps`
+- `debugFramesDir`
+- `audio`
+- `subtitles`
+- `transition`
+- `intermediateVideo`
+- `finalVideo`
+
+## Media composition fields
+
+### audio
+
+```json
+{
+  "path": "./assets/narration.wav",
+  "volume": 0.8,
+  "loop": true
+}
+```
+
+### subtitles
+
+```json
+{
+  "path": "./assets/captions.vtt",
+  "mode": "burn-in"
+}
+```
+
+Supported subtitle modes:
+
+- `soft`
+- `burn-in`
+
+### transition
+
+```json
+{
+  "type": "crossfade",
+  "duration": 0.25
+}
+```
+
+Supported transition types:
+
+- `fade-in`
+- `crossfade`
+
+## Full sample
+
+The bundled sample file is the best starting point:
+
+```bash
+cp rollberry.project.sample.json rollberry.project.json
+```

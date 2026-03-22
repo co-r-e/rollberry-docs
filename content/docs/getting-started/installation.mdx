@@ -1,121 +1,114 @@
 ---
 title: Installation
-description: Install Rollberry using npx for zero-install usage, or globally via npm. Covers system requirements and verification.
+description: Install and verify the current Rollberry implementation. Covers Node.js 24.12+, FFmpeg, Chromium auto-install, and npx usage.
 order: 1
 ---
 
 ## Requirements
 
-Rollberry requires **Node.js 18 or later**. You can check your current Node.js version by running:
+Rollberry currently requires:
+
+- Node.js `24.12.0` or later
+- `ffmpeg` available on `PATH`
+
+Check your versions first:
 
 ```bash
 node --version
+ffmpeg -version
 ```
 
-If you need to install or update Node.js, visit [nodejs.org](https://nodejs.org/) or use a version manager like [nvm](https://github.com/nvm-sh/nvm):
+If `ffmpeg` is missing, install it with your platform package manager:
 
 ```bash
-# Install Node.js 18+ using nvm
-nvm install 18
-nvm use 18
+# macOS
+brew install ffmpeg
+
+# Ubuntu
+sudo apt install ffmpeg
+
+# Windows
+winget install ffmpeg
 ```
 
-Rollberry uses Playwright to manage the Chromium browser automatically. There is no need to install Chrome or Chromium separately — Playwright handles the browser binary download on first run.
+## Recommended: use npx
 
-## Zero-install with npx (recommended)
-
-The easiest way to use Rollberry is with `npx`, which comes bundled with Node.js. This approach requires no installation at all:
+The easiest way to run Rollberry is with `npx`:
 
 ```bash
-npx rollberry capture https://example.com
+npx rollberry capture https://example.com --out ./artifacts/example.mp4
 ```
 
-On the first run, `npx` will download the `rollberry` package and its dependencies (including the Chromium browser binary). Subsequent runs will use the cached version.
+This keeps the CLI version explicit in automation and avoids managing a global
+install.
 
-This is the recommended approach for most users because:
-
-- No global packages to manage or update
-- Always runs the latest version (or specify a version explicitly)
-- Clean environment with no side effects on your system
-- Works immediately in CI/CD pipelines
-
-To pin a specific version:
+To pin a version:
 
 ```bash
-npx rollberry@0.1.3 capture https://example.com
+npx rollberry@0.1.9 capture https://example.com --out ./artifacts/example.mp4
 ```
 
-## Global installation
+## Optional: global install
 
-If you use Rollberry frequently, you can install it globally for faster startup:
+If you use Rollberry constantly on the same machine, you can also install it
+globally:
 
 ```bash
 npm install -g rollberry
 ```
 
-After global installation, the `rollberry` command is available directly:
+Then run it directly:
 
 ```bash
-rollberry capture https://example.com
+rollberry capture https://example.com --out ./artifacts/example.mp4
 ```
 
-To update to the latest version:
+## Chromium behavior
 
-```bash
-npm update -g rollberry
-```
+Rollberry uses Playwright's Chromium browser. If Chromium is missing on first
+run, Rollberry attempts to install it automatically before capture starts.
 
-To uninstall:
-
-```bash
-npm uninstall -g rollberry
-```
+You do not need to install Chrome manually for the normal workflow.
 
 ## Verifying the installation
 
-After installation, verify that Rollberry is working correctly:
+Check the CLI version:
 
 ```bash
-# Check the version
 npx rollberry --version
 ```
 
 Expected output:
 
-```
-rollberry v0.1.3
+```text
+0.1.9
 ```
 
-You can also run a quick test capture to confirm everything is set up properly:
+Run a smoke test:
 
 ```bash
-npx rollberry capture https://example.com --duration 3
+npx rollberry capture https://example.com --out ./artifacts/smoke.mp4
 ```
 
-This should produce an MP4 file in the `./rollberry-output` directory within a few seconds.
+Successful runs produce:
 
-## Platform support
+- `./artifacts/smoke.mp4`
+- `./artifacts/smoke.manifest.json`
+- `./artifacts/smoke.log.jsonl`
 
-Rollberry works on all platforms supported by Playwright:
+## CI and automation
 
-| Platform | Architecture | Status |
-|---|---|---|
-| macOS | x64, arm64 (Apple Silicon) | Supported |
-| Linux | x64, arm64 | Supported |
-| Windows | x64 | Supported |
-
-On Linux, you may need to install additional system dependencies for Chromium. Playwright provides a command to install them:
+For CI, `npx` is usually the safest option because the version can be pinned in
+the command itself:
 
 ```bash
-npx playwright install-deps chromium
+npx rollberry@0.1.9 capture https://example.com --out ./artifacts/ci.mp4
 ```
 
-## CI/CD environments
+Make sure the environment already has Node.js `24.12.0+` and `ffmpeg`
+available.
 
-Rollberry works in CI/CD pipelines out of the box. For headless environments like GitHub Actions, GitLab CI, or Jenkins, no additional configuration is needed since Rollberry runs the browser in headless mode by default.
+## Next step
 
-For Docker-based CI environments, you may need to install Chromium's system dependencies. See the [Common Issues](/docs/troubleshooting/common-issues) page for details on CI/CD setup.
-
-## Next steps
-
-With Rollberry installed, head to the [Quick Start](/docs/getting-started/quick-start) guide to capture your first page.
+Continue with [Quick Start](/docs/getting-started/quick-start) for the first
+capture and first project render.

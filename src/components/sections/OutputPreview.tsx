@@ -5,15 +5,34 @@ import { useRef } from "react";
 import { SectionWrapper } from "@/components/ui/SectionWrapper";
 import { ViewfinderFrame } from "@/components/layout/ViewfinderFrame";
 
-const MANIFEST_JSON = `{
-  "url": "https://example.com",
-  "viewport": "1280x720",
-  "fps": 30,
-  "duration": "8.4s",
-  "frames": 252,
-  "output": "capture.mp4",
-  "size": "4.2MB"
+const SUMMARY_JSON = `{
+  "kind": "render-summary",
+  "status": "succeeded",
+  "project": {
+    "path": "./rollberry.project.json",
+    "name": "Launch Demo"
+  },
+  "outputs": [
+    {
+      "name": "desktop",
+      "videoPath": "./artifacts/demo-desktop.mp4",
+      "manifestPath": "./artifacts/demo-desktop.manifest.json"
+    },
+    {
+      "name": "mobile",
+      "videoPath": "./artifacts/demo-mobile.webm",
+      "manifestPath": "./artifacts/demo-mobile.manifest.json"
+    }
+  ]
 }`;
+
+const ARTIFACTS = [
+  "demo-desktop.mp4",
+  "demo-desktop.manifest.json",
+  "demo-desktop.log.jsonl",
+  "demo-mobile.webm",
+  "demo.render-summary.json",
+];
 
 export function OutputPreview() {
   const ref = useRef<HTMLDivElement>(null);
@@ -23,10 +42,11 @@ export function OutputPreview() {
     <SectionWrapper id="output-preview">
       <div className="text-center">
         <h2 className="text-3xl font-extrabold tracking-tight text-text sm:text-4xl">
-          See the output
+          Outputs you can automate against
         </h2>
         <p className="mt-4 text-lg text-text-secondary">
-          A polished MP4 video with structured metadata.
+          Video is only one artifact. Every run also emits manifests, JSONL
+          logs, and render summaries.
         </p>
       </div>
 
@@ -68,7 +88,9 @@ export function OutputPreview() {
                   className="h-2 w-2 rounded-full bg-primary"
                   style={{ animation: "blink 1.2s ease-in-out infinite" }}
                 />
-                <span className="text-[10px] font-mono text-white">REC 00:04:12</span>
+                <span className="text-[10px] font-mono text-white">
+                  RENDER 00:04:12
+                </span>
               </div>
             </div>
 
@@ -86,22 +108,36 @@ export function OutputPreview() {
                   transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
                 />
               </div>
-              <span className="text-xs font-mono text-text-secondary">0:08</span>
+              <span className="text-xs font-mono text-text-secondary">
+                desktop + mobile
+              </span>
             </div>
           </motion.div>
         </ViewfinderFrame>
 
-        {/* Manifest JSON */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <p className="mb-3 text-sm font-medium text-text-secondary">
-            manifest.json
+            Written artifacts
+          </p>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {ARTIFACTS.map((artifact) => (
+              <span
+                key={artifact}
+                className="rounded-full border border-neutral-200 bg-surface px-3 py-1 text-xs font-medium text-text-secondary"
+              >
+                {artifact}
+              </span>
+            ))}
+          </div>
+          <p className="mb-3 text-sm font-medium text-text-secondary">
+            demo.render-summary.json
           </p>
           <pre className="overflow-x-auto rounded-xl border border-neutral-800 bg-code-bg p-5 font-mono text-sm leading-relaxed text-neutral-300">
-            <code>{MANIFEST_JSON}</code>
+            <code>{SUMMARY_JSON}</code>
           </pre>
         </motion.div>
       </div>

@@ -1,9 +1,9 @@
 export const SITE = {
   name: "Rollberry",
-  tagline: "Turn any web page into a smooth scroll video",
+  tagline: "Capture pages. Render launch-ready videos.",
   description:
-    "A zero-install CLI that captures full-page scrolling videos using a real browser.",
-  version: "v0.1.8",
+    "An open-source CLI and Node API for real-browser captures and project-driven renders with structured sidecar artifacts.",
+  version: "v0.1.9",
   license: "MIT License",
   github: "https://github.com/co-r-e/rollberry",
   npm: "https://www.npmjs.com/package/rollberry",
@@ -16,6 +16,7 @@ export const SITE = {
 export const NAV_LINKS = {
   product: [
     { label: "Features", href: "#features" },
+    { label: "Artifacts", href: "#output-preview" },
     { label: "Quick Start", href: "#quick-start" },
     { label: "GitHub", href: SITE.github, external: true },
   ],
@@ -30,92 +31,99 @@ export const NAV_LINKS = {
 
 export const FEATURES = [
   {
-    title: "Real Browser Rendering",
+    title: "Project-Driven Renders",
     description:
-      "Uses a real Chromium browser via Playwright — no headless hacks. What you see is what you capture.",
+      "Turn one project JSON into desktop and mobile outputs with repeatable scenes, timing, and sidecar artifacts.",
     size: "large" as const,
   },
   {
-    title: "Localhost Support",
+    title: "Timeline Actions",
     description:
-      "Capture your local dev server with automatic retry and wait-for-ready logic.",
+      "Interleave scroll, pause, click, hover, type, and keypress actions inside a scene without leaving JSON.",
     size: "medium" as const,
   },
   {
-    title: "Custom Viewport",
-    description: "Set any resolution — mobile, tablet, desktop, or ultra-wide.",
+    title: "MP4 And WebM",
+    description:
+      "Choose output format per target and tune intermediate and final encoding settings per render output.",
     size: "medium" as const,
   },
   {
-    title: "Smooth Scrolling",
+    title: "Audio And Subtitles",
     description:
-      "Hardware-accelerated smooth scrolling for buttery-smooth capture output.",
+      "Attach looping audio, burn captions into MP4, or ship soft subtitles alongside WebM outputs.",
     size: "small" as const,
   },
   {
-    title: "FPS Config",
+    title: "Transitions",
     description:
-      "Control frame rate from 1 to 60 fps for the perfect size-quality balance.",
+      "Compose scenes with fade-in or crossfade transitions for cleaner product walkthroughs.",
     size: "small" as const,
   },
   {
-    title: "Wait Conditions",
+    title: "Structured Artifacts",
     description:
-      "Wait for selectors, network idle, or custom timeouts before capturing.",
+      "Every run writes machine-readable manifests and JSONL logs you can archive, diff, and automate against.",
     size: "small" as const,
   },
   {
-    title: "Hide Overlays",
+    title: "Localhost Ready",
     description:
-      "Automatically hide cookie banners, sticky headers, and floating elements.",
+      "Retry logic and localhost HTTPS tolerance make it practical for staging previews and local demos.",
     size: "small" as const,
   },
   {
     title: "Debug Frames",
     description:
-      "Export individual frames as PNGs for frame-by-frame inspection.",
+      "Export raw PNG frames to inspect timing, overlays, and scene boundaries frame by frame.",
     size: "small" as const,
   },
   {
-    title: "JSONL Logs",
+    title: "Node API",
     description:
-      "Structured logging output for CI/CD integration and pipeline automation.",
+      "Use the same capture and render pipeline programmatically from ESM for custom tooling and CI jobs.",
     size: "small" as const,
   },
 ] as const;
 
 export const QUICK_START_COMMANDS = [
   {
-    comment: "Capture any public URL",
-    command: "rollberry capture https://your-site.com",
-  },
-  {
-    comment: "Capture localhost with auto-retry",
-    command: "rollberry capture http://localhost:3000",
-  },
-  {
-    comment: "Custom viewport and duration",
+    comment: "Capture localhost with explicit output and wait condition",
     command:
-      "rollberry capture https://example.com --viewport 1920x1080 --duration 10",
+      "npx rollberry capture http://localhost:3000 --out ./artifacts/local.mp4 --wait-for selector:body",
+  },
+  {
+    comment: "Capture multiple URLs into one MP4 with a page gap",
+    command:
+      "npx rollberry capture https://example.com https://example.com/pricing --page-gap 1.5 --out ./artifacts/site-tour.mp4",
+  },
+  {
+    comment: "Render a project file into all configured outputs",
+    command: "npx rollberry render ./rollberry.project.json",
+  },
+  {
+    comment: "Render only the mobile output from the same project",
+    command: "npx rollberry render ./rollberry.project.json --output mobile",
   },
 ] as const;
 
 export const HOW_IT_WORKS_STEPS = [
   {
     number: 1,
-    title: "Run",
-    description: "Execute a single command with any URL — no install required.",
+    title: "Define",
+    description:
+      "Point Rollberry at one or more URLs, or describe scenes and outputs in a project JSON file.",
   },
   {
     number: 2,
-    title: "Capture",
+    title: "Render",
     description:
-      "Rollberry launches a real browser, scrolls the page smoothly, and captures every frame.",
+      "Rollberry drives real Chromium, performs actions and scrolling, then composes the final media with FFmpeg.",
   },
   {
     number: 3,
-    title: "Share",
+    title: "Ship",
     description:
-      "Get an MP4 video file ready to share, embed, or use in your workflow.",
+      "Collect video, manifest, logs, and render summaries that slot directly into product, QA, and release workflows.",
   },
 ] as const;

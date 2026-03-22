@@ -1,0 +1,135 @@
+---
+title: Project Rendering
+description: Use rollberry render with a project JSON file for repeatable scenes, actions, timelines, and multiple outputs.
+order: 0
+---
+
+## When to use render
+
+Use `render` when a plain URL capture is no longer enough.
+
+Typical signs:
+
+- you need desktop and mobile outputs from one source of truth
+- the page requires clicks or typing before the interesting state appears
+- you want timed pauses and scroll segments inside a scene
+- you want audio, subtitles, or transitions during composition
+
+## Start from the sample file
+
+Rollberry ships a sample project and a JSON schema:
+
+```bash
+cp rollberry.project.sample.json rollberry.project.json
+npx rollberry render ./rollberry.project.json
+```
+
+## Core structure
+
+Project files are made of three main areas:
+
+- `defaults` for shared viewport, fps, wait conditions, and hidden selectors
+- `scenes` for URLs plus actions and timeline segments
+- `outputs` for named deliverables such as desktop MP4 and mobile WebM
+
+Example:
+
+```json
+{
+  "$schema": "./rollberry.project.schema.json",
+  "schemaVersion": 1,
+  "defaults": {
+    "fps": 60,
+    "viewport": "1440x900",
+    "waitFor": "selector:body"
+  },
+  "scenes": [
+    {
+      "name": "home",
+      "url": "http://localhost:3000",
+      "actions": [{ "type": "click", "selector": "[data-open-menu]" }],
+      "timeline": [
+        { "type": "pause", "duration": 0.4 },
+        { "type": "scroll", "toSelector": "#pricing", "duration": 1.4 },
+        { "type": "scroll", "to": "bottom", "duration": "auto" }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "desktop",
+      "out": "./artifacts/demo-desktop.mp4"
+    },
+    {
+      "name": "mobile",
+      "out": "./artifacts/demo-mobile.webm",
+      "format": "webm"
+    }
+  ]
+}
+```
+
+## Scene actions vs timeline
+
+`actions` run before capture begins for the scene. Use them for setup such as:
+
+- opening a menu
+- typing into a field
+- tabbing into focus
+
+`timeline` runs during the capture itself. Use it when the interaction should
+appear inside the final video:
+
+- `pause`
+- `scroll`
+- `click`
+- `hover`
+- `press`
+- `type`
+- `scroll-to`
+
+## Rendering named outputs
+
+Render all configured outputs:
+
+```bash
+npx rollberry render ./rollberry.project.json
+```
+
+Render only one output:
+
+```bash
+npx rollberry render ./rollberry.project.json --output mobile
+```
+
+Repeat `--output` if you want a subset of outputs.
+
+## Output composition features
+
+Per output, the current implementation supports:
+
+- `format: "mp4"` or `format: "webm"`
+- `audio`
+- `subtitles`
+- `transition`
+- `intermediateVideo`
+- `finalVideo`
+- `debugFramesDir`
+
+This makes it practical to create a polished presentation output and a smaller
+distribution output from the same scene graph.
+
+## Files written by render
+
+Each output writes:
+
+- the video file
+- a per-output manifest
+- a per-output JSONL log
+
+The overall render also writes a summary manifest such as
+`demo.render-summary.json`.
+
+## Next step
+
+See [Project File](/docs/reference/project-file) for a field-by-field reference.

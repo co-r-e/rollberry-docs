@@ -11,21 +11,26 @@ export function WhatItDoes() {
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <div>
           <h2 className="text-3xl font-extrabold tracking-tight text-text sm:text-4xl">
-            One command.{" "}
-            <span className="text-primary">Full-page video.</span>
+            One CLI.{" "}
+            <span className="text-primary">Capture or compose.</span>
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-text-secondary">
-            Rollberry launches a real Chromium browser, smoothly scrolls through
-            your entire page, captures every frame, and encodes it into a
-            high-quality MP4 — all from a single{" "}
+            Rollberry launches a real Chromium browser, captures full-page
+            motion with deterministic timing, and composes final outputs with
+            FFmpeg. Use{" "}
             <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-sm text-primary">
-              npx
+              capture
             </code>{" "}
-            command.
+            for one-off URLs and{" "}
+            <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-sm text-primary">
+              render
+            </code>{" "}
+            for repeatable project-driven videos.
           </p>
           <p className="mt-4 text-base leading-relaxed text-text-secondary">
-            No browser extensions. No screen recording software. No
-            dependencies to install. Just point it at a URL and get your video.
+            That means one pipeline for localhost previews, staged deployments,
+            multi-scene product walkthroughs, and machine-readable artifacts
+            such as manifests, JSONL logs, and render summaries.
           </p>
         </div>
 

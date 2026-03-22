@@ -1,132 +1,93 @@
 ---
 title: Debugging
-description: Use debug frames, structured JSONL logs, and sidecar manifests to troubleshoot capture issues with Rollberry.
-order: 3
+description: Diagnose bad captures and renders with debug frames, manifests, JSONL logs, and render summary files.
+order: 4
 ---
 
-## Overview
+## Start with the sidecars
 
-When a capture does not produce the expected result — a blank video, missing content, or incorrect scroll behavior — Rollberry provides several tools to help you diagnose the problem: **debug frames**, **JSONL logs**, and **sidecar manifests**.
+Rollberry writes structured files on every run. They should be your first stop:
+
+- `<out>.manifest.json`
+- `<out>.log.jsonl`
+
+For `render`, you also get a project-level `*.render-summary.json`.
 
 ## Debug frames
 
-Use the `--debug-frames-dir` flag to save every captured frame as an individual PNG file. This is the most powerful way to see exactly what the browser was "seeing" during the capture:
+Use `--debug-frames-dir` on `capture`:
 
 ```bash
-rollberry capture https://example.com --debug-frames-dir ./debug-output
+npx rollberry capture https://example.com \
+  --out ./artifacts/debug.mp4 \
+  --debug-frames-dir ./artifacts/debug-frames
 ```
 
-The specified directory will be created if it does not exist and will contain:
+Or define `debugFramesDir` per output in a project file.
 
-```
-debug-output/
-├── 00000.png
-├── 00001.png
-├── 00002.png
-├── ...
-└── 00300.png
-```
+The exported PNGs help you answer:
 
-The frames are numbered sequentially across the entire capture. At the default 60 FPS with a 5-second duration, this produces 300 frames.
+- Did the page load before capture began?
+- Was the overlay actually hidden?
+- Did the scroll reach the intended area?
+- Did a timeline action land on the right frame?
 
-## Examining individual frames
+## Reading capture manifests
 
-The saved frames let you pinpoint exactly where something went wrong:
+Capture manifests currently use `schemaVersion: 2` and record:
 
-**Check the first frame** — Open `00000.png` to see what the page looked like before scrolling started. This helps identify:
-- Whether the page loaded correctly.
-- Whether overlay elements were hidden (if using `--hide-selector`).
-- Whether the `--wait-for` condition was sufficient for the page to render.
+- sanitized input URLs
+- viewport, fps, duration, motion, and timeout
+- wait condition and hidden selectors
+- artifact paths
+- result metrics
+- warnings and errors
 
-**Check the last frame** — Open the last frame to confirm the scroll reached the bottom of the page.
+Warnings are especially useful in automation. For example,
+`scroll_height_truncated` means the measured page height exceeded the current
+capture limit.
 
-**Compare frames in sequence** — Look for sudden jumps or blank sections that might indicate lazy-loading failures or scroll interruptions.
+## Reading render manifests
+
+Render manifests add output-specific composition details such as:
+
+- output format (`mp4` or `webm`)
+- audio settings
+- subtitle mode
+- transition settings
+- intermediate and final encoding configuration
+
+The render summary file gives you one place to inspect the status of every
+named output.
+
+## Reading JSONL logs
+
+Logs are newline-delimited JSON events. They are suitable for grep, `jq`, and
+CI artifact collection.
 
 ```bash
-# On macOS, open all frames in Preview for quick review
-open ./debug-output/*.png
-
-# On Linux, use an image viewer
-feh ./debug-output/
+cat ./artifacts/demo.log.jsonl
 ```
 
-## Structured JSONL logs
+Useful event families include:
 
-By default, Rollberry writes a sidecar log file in [JSONL format](https://jsonlines.org/) (one JSON object per line) named after your output file (e.g., `rollberry.log.jsonl`). You can specify a custom path using `--log-file`.
+- capture lifecycle events such as `capture.start` and `capture.complete`
+- render lifecycle events such as `render.start` and `render.complete`
+- scene and timeline events for project rendering
+- probe warnings when FFprobe-backed metrics are unavailable
 
-```bash
-# View the raw log
-cat rollberry.log.jsonl
-```
+## Good debugging sequence
 
-Each log entry has a consistent structure:
+1. Read the manifest for warnings and the failing option set.
+2. Read the JSONL log for the last successful event.
+3. Export debug frames if the failure is visual or timing-related.
+4. Reduce the scope to one URL or one output if the project is large.
 
-```json
-{"timestamp":"2026-03-20T04:30:00.000Z","level":"info","event":"browser.open","details":{"url":"https://example.com","viewport":{"width":1440,"height":900}}}
-{"timestamp":"2026-03-20T04:30:00.500Z","level":"info","event":"render.start","details":{"frameCount":300,"fps":60,"durationSeconds":5}}
-{"timestamp":"2026-03-20T04:30:05.600Z","level":"info","event":"encode.complete","details":{"outPath":"/path/to/rollberry.mp4"}}
-```
+## Common signals
 
-## Sidecar manifest
-
-Rollberry also generates a `.manifest.json` file (e.g., `rollberry.manifest.json`) containing technical metadata about the capture. This is useful for verifying the results of an automated capture process.
-
-```json
-{
-  "outPath": "/path/to/rollberry.mp4",
-  "frameCount": 300,
-  "durationSeconds": 5.0,
-  "pages": [
-    {
-      "url": "https://example.com",
-      "frameCount": 300,
-      "durationSeconds": 5.0,
-      "scrollHeight": 4200,
-      "truncated": false
-    }
-  ],
-  "truncated": false
-}
-```
-
-## Troubleshooting with debug output
-
-### Blank or white video
-
-Check `00000.png`. If it is blank, the page did not load before capture started. Try using `--wait-for` with a selector or a fixed delay:
-
-```bash
-rollberry capture https://example.com --wait-for ms:5000 --debug-frames-dir ./debug
-```
-
-### Content missing from the video
-
-If certain sections appear blank in the frames, the content may be lazy-loaded and not triggering during the scroll. Try a slower fixed duration:
-
-```bash
-# Force a slow 20-second scroll
-rollberry capture https://example.com --duration 20
-```
-
-### Scroll does not reach the bottom
-
-Check the `.manifest.json` or JSONL logs for the `scrollHeight` value. Rollberry has a default limit of 30,000 pixels. If your page is longer than this, it will be truncated (indicated by `truncated: true` in the manifest).
-
-### Overlay elements still visible
-
-Open `00000.png` and check if the overlay is present. If it is, your CSS selector may not be matching the element. Use browser DevTools to verify the correct selector, then retry:
-
-```bash
-rollberry capture https://example.com \
-  --hide-selector ".correct-selector" \
-  --debug-frames-dir ./debug
-```
-
-## Performance considerations
-
-Saving debug frames significantly increases disk usage and slightly slows down the capture because every frame must be written to disk as a PNG file. For a 5-second capture at 60 FPS:
-
-- **Standard capture:** ~1 MP4 file (a few MB)
-- **With debug frames:** ~300 PNG files (can be 200+ MB)
-
-Only use `--debug-frames-dir` when actively troubleshooting.
+- Blank first frame: use a stronger `--wait-for`
+- Overlay still visible: fix `--hide-selector`
+- Output already exists: rerun with `--force`
+- Truncation warning: shorten the page, split scenes, or redesign the capture
+- Crossfade render failure with probe warnings: ensure FFmpeg and FFprobe are
+  installed correctly

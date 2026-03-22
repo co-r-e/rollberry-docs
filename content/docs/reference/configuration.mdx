@@ -1,172 +1,75 @@
 ---
-title: Configuration
-description: Advanced configuration for Rollberry — environment variables, browser settings, Playwright options, and internal defaults.
-order: 2
+title: Runtime And Limits
+description: Current runtime requirements, built-in defaults, and implementation limits for Rollberry.
+order: 3
 ---
 
-## Overview
+## Runtime requirements
 
-Rollberry is designed to work with sensible defaults and minimal configuration. Most users will only need the CLI flags documented in the [CLI Options](/docs/reference/cli-options) reference. However, for advanced use cases — CI/CD pipelines, custom browser configurations, or integration with other tools — Rollberry supports additional configuration through environment variables and internal settings.
+The current implementation expects:
 
-## Environment variables
+- Node.js `24.12.0+`
+- `ffmpeg` on `PATH`
 
-Rollberry respects the following environment variables. These are useful for setting defaults without passing flags on every invocation, or for configuring behavior in CI/CD environments.
+Chromium is installed automatically when Playwright does not find a local
+binary.
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ROLLBERRY_OUTPUT` | `string` | `./rollberry-output` | Default output directory |
-| `ROLLBERRY_VIEWPORT` | `string` | `1280x720` | Default viewport size |
-| `ROLLBERRY_DURATION` | `number` | `5` | Default scroll duration in seconds |
-| `ROLLBERRY_FPS` | `number` | `30` | Default frames per second |
-| `ROLLBERRY_WAIT` | `number` | `1000` | Default wait time in milliseconds |
-| `ROLLBERRY_TIMEOUT` | `number` | `60000` | Default global timeout in milliseconds |
-| `ROLLBERRY_QUALITY` | `number` | `80` | Default video quality (1-100) |
-| `ROLLBERRY_DEBUG` | `boolean` | `false` | Enable debug mode by default |
+## Browser behavior
 
-Environment variables are overridden by CLI flags. For example, if `ROLLBERRY_VIEWPORT` is set to `1920x1080` but you pass `--viewport 390x844`, the CLI flag takes precedence.
+Rollberry launches headless Chromium through Playwright.
 
-**Usage example:**
+For localhost-style targets, the browser context also tolerates HTTPS certificate
+issues so local preview servers remain recordable.
 
-```bash
-# Set defaults for a CI pipeline
-export ROLLBERRY_VIEWPORT="1920x1080"
-export ROLLBERRY_QUALITY="90"
-export ROLLBERRY_TIMEOUT="120000"
+## Capture defaults
 
-# These captures use the environment defaults
-npx rollberry capture https://example.com
-npx rollberry capture https://example.com/about
-```
+Current defaults are:
 
-## Browser configuration
+- output: `./rollberry.mp4`
+- viewport: `1440x900`
+- fps: `60`
+- duration: `auto`
+- motion: `ease-in-out-sine`
+- timeout: `30000`
+- wait condition: `load`
+- page gap: `0`
 
-Rollberry uses Playwright to manage the Chromium browser. Under the hood, it configures the browser with settings optimized for page capture.
+## Auto duration rules
 
-### Default browser arguments
+For normal capture, `duration: "auto"` is derived from scroll distance at
+roughly `800px` per second and clamped between:
 
-Rollberry launches Chromium with the following default arguments:
+- minimum `4s`
+- maximum `40s`
 
-```
---disable-background-timer-throttling
---disable-backgrounding-occluded-windows
---disable-renderer-backgrounding
---disable-ipc-flooding-protection
---autoplay-policy=no-user-gesture-required
-```
+Timeline scroll segments in project renders use a separate auto-duration rule:
 
-These flags ensure that the browser performs consistently during capture, even in headless mode.
+- roughly `1400px` per second
+- minimum `0.6s`
+- maximum `12s`
 
-### Playwright browser path
+## Important limits
 
-By default, Playwright downloads and manages its own Chromium binary. If you need to use a specific browser installation, you can set the `PLAYWRIGHT_BROWSERS_PATH` environment variable:
+Current implementation limits include:
 
-```bash
-# Use a custom browser installation directory
-export PLAYWRIGHT_BROWSERS_PATH=/opt/browsers
-npx rollberry capture https://example.com
-```
+- maximum FPS: `120`
+- maximum measured scroll height: `30000px`
+- maximum total frames in a run: `36000`
 
-You can also use the `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` environment variable to point to a specific Chromium or Chrome executable:
+If a page exceeds the measured scroll height cap, Rollberry records a
+truncation warning in the manifest.
 
-```bash
-# Use system Chrome on macOS
-export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-npx rollberry capture https://example.com
-```
+## Localhost behavior
 
-### Headless mode
+When the target host is local, Rollberry retries transient connection failures
+such as `ECONNREFUSED` during navigation until the timeout budget is exhausted.
 
-Rollberry always runs in headless mode. The browser window is never displayed, which makes it suitable for servers, CI/CD pipelines, and headless environments.
+## Configuration surface
 
-## Viewport and device emulation
+Most behavior is configured through:
 
-The `--viewport` flag sets the browser window size. Rollberry does not perform full device emulation (user agent, touch events, device pixel ratio). If you need to capture a page as it would appear on a specific device, set the viewport to match the device's screen resolution.
+- CLI flags for `capture`
+- project JSON fields for `render`
 
-Common device viewport sizes for reference:
-
-| Device | Viewport |
-|---|---|
-| iPhone 14 Pro | `393x852` |
-| iPhone SE | `375x667` |
-| iPad Air | `820x1180` |
-| iPad Pro 12.9" | `1024x1366` |
-| Pixel 7 | `412x915` |
-| MacBook Air 13" | `1470x956` |
-| Full HD monitor | `1920x1080` |
-| 4K monitor | `3840x2160` |
-
-## Video encoding
-
-Rollberry encodes the captured frames into an MP4 video using the H.264 codec. The encoding settings are determined by the `--quality` and `--fps` flags.
-
-**Quality mapping:**
-
-| Quality value | CRF (approximate) | Use case |
-|---|---|---|
-| 100 | 0 (lossless) | Archival, pixel-perfect captures |
-| 90 | 15 | High quality presentations |
-| 80 (default) | 23 | General purpose |
-| 60 | 30 | Smaller file size, still clear |
-| 40 | 38 | Minimum viable quality |
-
-Higher quality values produce larger files. For most use cases, the default quality of 80 provides a good balance.
-
-## Scroll behavior internals
-
-Rollberry uses JavaScript-based smooth scrolling within the Chromium browser. The scroll algorithm works as follows:
-
-1. **Measure** the total scrollable height of the page (`document.documentElement.scrollHeight`)
-2. **Calculate** the scroll distance: `totalHeight - viewportHeight`
-3. **Interpolate** the scroll position over the configured duration using an easing function
-4. **Capture** a screenshot at each frame interval (determined by `--fps`)
-
-The `--scroll-speed` multiplier affects the rate of scroll position change per frame. A speed of `0.5` means the scroll covers half the distance per unit time, while `2.0` covers twice the distance.
-
-If the page height is less than or equal to the viewport height (i.e., the entire page fits in one screen), Rollberry will still produce a video of the specified duration — it will simply show the static page without scrolling.
-
-## Timeout behavior
-
-The `--timeout` flag sets a global timeout for the entire capture process, including:
-
-- Browser launch
-- Page navigation
-- Wait conditions (`--wait` and `--wait-for-selector`)
-- Scroll capture
-- Video encoding
-
-If any phase exceeds the remaining timeout, Rollberry aborts the capture and exits with status code 2.
-
-For pages that take a long time to load or have extensive content, increase the timeout:
-
-```bash
-npx rollberry capture https://slow-site.com --timeout 180000
-```
-
-## Network and proxy configuration
-
-Rollberry uses the system's default network configuration. If you need to route traffic through a proxy, configure it via environment variables that Playwright respects:
-
-```bash
-# HTTP proxy
-export HTTP_PROXY=http://proxy.example.com:8080
-export HTTPS_PROXY=http://proxy.example.com:8080
-
-npx rollberry capture https://example.com
-```
-
-To bypass the proxy for specific hosts:
-
-```bash
-export NO_PROXY=localhost,127.0.0.1,.internal.example.com
-```
-
-## Integration with other tools
-
-Rollberry is designed to work well as part of larger workflows. The `manifest.json` output and the use of exit codes make it straightforward to integrate with:
-
-- **Shell scripts** — Parse manifest with `jq`, check exit codes for error handling
-- **CI/CD pipelines** — Run as a step in GitHub Actions, GitLab CI, or Jenkins
-- **Node.js scripts** — Spawn as a child process, parse manifest output
-- **Monitoring dashboards** — Schedule periodic captures and track visual changes
-
-See the [Multi-Page Captures](/docs/guides/multi-page) guide for scripting examples.
+The current codebase does not expose a separate environment-variable-based
+configuration layer for core capture settings.

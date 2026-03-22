@@ -45,7 +45,7 @@ function MockCapture() {
             transition={{ delay: 1.2 }}
           >
             <span className="text-[10px] font-mono text-white">
-              Capturing...
+              Rendering desktop...
             </span>
           </motion.div>
 
@@ -157,7 +157,7 @@ function MockCapture() {
 }
 
 function TrustBar() {
-  const items = ["Zero install", "Real browser", "Open source"];
+  const items = ["Project JSON", "Real Chromium", "MP4 / WebM"];
 
   return (
     <motion.div
@@ -192,8 +192,8 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-8 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl"
         >
-          Turn any web page into a{" "}
-          <span className="text-white/80">smooth scroll video</span>
+          Capture pages.{" "}
+          <span className="text-white/80">Render launch-ready videos.</span>
         </motion.h1>
 
         <motion.p
@@ -216,7 +216,7 @@ export function Hero() {
             href="#quick-start"
             className="bg-white text-primary hover:bg-white/90 active:bg-white/80"
           >
-            Get Started
+            See Quick Start
           </Button>
           <Button
             variant="custom"

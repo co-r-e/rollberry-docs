@@ -1,129 +1,88 @@
 ---
 title: Localhost Captures
-description: Capture local development servers with Rollberry. Covers auto-retry behavior, common framework ports, and integration tips.
-order: 1
+description: Capture local development servers with retry behavior, localhost HTTPS tolerance, and wait conditions that match the current implementation.
+order: 2
 ---
 
-## Overview
+## Why localhost is a first-class workflow
 
-Rollberry fully supports capturing pages served from `localhost` and other local addresses. This makes it easy to capture your application during development without deploying to a staging server first.
-
-```bash
-rollberry capture http://localhost:3000
-```
-
-## How localhost capture works
-
-When Rollberry detects a `localhost` or `127.0.0.1` URL, it enables automatic retry logic. Local development servers may take a moment to become available, especially if you start the server and the capture command at the same time. Rollberry will retry the connection several times before giving up, giving your server time to start.
-
-The retry behavior works as follows:
-
-1. Rollberry attempts to connect to the local URL.
-2. If the connection is refused, it waits briefly and retries.
-3. This continues for up to the configured timeout (default: 30,000ms / 30 seconds).
-4. Once the server responds, capture proceeds normally.
-
-This means you can start your dev server and Rollberry at the same time without worrying about race conditions.
-
-## Common framework configurations
-
-Here are typical commands for capturing pages from popular development frameworks:
-
-**Next.js:**
+Rollberry is designed to record development environments, not just public URLs.
 
 ```bash
-# Start the dev server
-npm run dev
-
-# Capture — Next.js defaults to port 3000
-rollberry capture http://localhost:3000 --wait-for ms:2000
+npx rollberry capture http://localhost:3000 --out ./artifacts/local.mp4
 ```
 
-**Vite (React, Vue, Svelte):**
+For localhost URLs, the current implementation adds:
+
+- retry behavior for transient connection failures
+- localhost HTTPS tolerance for self-signed certificates
+
+## Waiting for the app to be ready
+
+Use `--wait-for` to start capture at the right moment:
 
 ```bash
-# Start Vite dev server
-npm run dev
-
-# Capture — Vite defaults to port 5173
-rollberry capture http://localhost:5173
+npx rollberry capture http://localhost:3000 \
+  --out ./artifacts/local.mp4 \
+  --wait-for selector:body
 ```
 
-**Astro:**
+Other valid forms are:
+
+- `load`
+- `selector:<css>`
+- `ms:<n>`
+
+Examples:
 
 ```bash
-# Start Astro dev server
-npm run dev
-
-# Capture — Astro defaults to port 4321
-rollberry capture http://localhost:4321
+npx rollberry capture http://localhost:3000 --wait-for selector:#app
+npx rollberry capture http://localhost:3000 --wait-for ms:2000
 ```
 
-## Starting server and capture together
+## Common framework ports
 
-You can use shell scripting to start your development server and capture in a single command:
+- Next.js: `http://localhost:3000`
+- Vite: `http://localhost:5173`
+- Astro: `http://localhost:4321`
+
+## Localhost HTTPS
+
+If your preview server uses HTTPS on localhost, Rollberry tolerates the local
+certificate problem automatically for localhost targets:
 
 ```bash
-#!/bin/bash
-# dev-capture.sh
-
-# Start the dev server in the background
-npm run dev &
-DEV_PID=$!
-
-# Run the capture (Rollberry will wait up to 30s for the server)
-rollberry capture http://localhost:3000 \
-  --wait-for ms:2000 \
-  --duration 8 \
-  --out ./dev-capture.mp4
-
-# Stop the dev server
-kill $DEV_PID
+npx rollberry capture https://localhost:3000 --out ./artifacts/secure.mp4
 ```
 
-## Custom ports and addresses
+This behavior is for localhost-style hosts such as `localhost` and
+`127.0.0.1`.
 
-If your server runs on a non-default port, simply specify the full URL:
+## Pairing localhost with project rendering
+
+Project files work especially well for local previews because the scene URLs can
+point at your app before deployment:
+
+```json
+{
+  "scenes": [
+    { "name": "home", "url": "http://localhost:3000" },
+    { "name": "pricing", "url": "http://localhost:3000/pricing" }
+  ]
+}
+```
+
+## If the server is slow to start
+
+Increase the capture timeout:
 
 ```bash
-# Custom port
-rollberry capture http://localhost:8080
-
-# Explicit IPv4 loopback
-rollberry capture http://127.0.0.1:3000
-
-# IPv6 loopback
-rollberry capture http://[::1]:3000
+npx rollberry capture http://localhost:3000 \
+  --out ./artifacts/local.mp4 \
+  --timeout 60000
 ```
 
-## Handling slow-starting servers
+## Next step
 
-Some servers take longer to start, especially in development mode with hot module replacement (HMR) initialization. If Rollberry times out before your server is ready, increase the timeout:
-
-```bash
-# Extend timeout to 60 seconds
-rollberry capture http://localhost:3000 --timeout 60000
-```
-
-You can also add an explicit wait time after the page loads to ensure all client-side hydration and data fetching is complete:
-
-```bash
-# Wait 5 seconds after page load before capturing
-rollberry capture http://localhost:3000 --wait-for ms:5000
-```
-
-## Waiting for specific content
-
-If your local app loads data asynchronously, use `--wait-for selector:<css>` to ensure the content is visible before the scroll capture begins:
-
-```bash
-# Wait for the main content area to render
-rollberry capture http://localhost:3000 \
-  --wait-for "selector:.main-content"
-
-# Wait for a data table to populate
-rollberry capture http://localhost:3000/dashboard \
-  --wait-for "selector:table tbody tr"
-```
-
-This is more reliable than a fixed wait time because it adapts to however long the data actually takes to load.
+See [Troubleshooting](/docs/troubleshooting/common-issues) if the capture still
+starts too early or cannot connect.

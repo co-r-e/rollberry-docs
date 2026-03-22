@@ -8,15 +8,17 @@ export function useTypewriter(
   startDelay = 500,
   shouldStart = true
 ) {
-  const [displayed, setDisplayed] = useState("");
-  const [done, setDone] = useState(false);
+  const runKey = `${text}\u0000${speed}\u0000${startDelay}\u0000${shouldStart}`;
+  const [state, setState] = useState({
+    displayed: "",
+    done: false,
+    runKey,
+  });
   const indexRef = useRef(0);
 
   useEffect(() => {
     if (!shouldStart) return;
 
-    setDisplayed("");
-    setDone(false);
     indexRef.current = 0;
 
     const delayTimer = setTimeout(() => {
@@ -24,17 +26,29 @@ export function useTypewriter(
         indexRef.current++;
         if (indexRef.current > text.length) {
           clearInterval(interval);
-          setDone(true);
+          setState({
+            displayed: text,
+            done: true,
+            runKey,
+          });
           return;
         }
-        setDisplayed(text.slice(0, indexRef.current));
+        setState({
+          displayed: text.slice(0, indexRef.current),
+          done: false,
+          runKey,
+        });
       }, speed);
 
       return () => clearInterval(interval);
     }, startDelay);
 
     return () => clearTimeout(delayTimer);
-  }, [text, speed, startDelay, shouldStart]);
+  }, [runKey, text, speed, startDelay, shouldStart]);
 
-  return { displayed, done };
+  if (state.runKey !== runKey) {
+    return { displayed: "", done: false };
+  }
+
+  return { displayed: state.displayed, done: state.done };
 }

@@ -1,0 +1,67 @@
+---
+title: Node API
+description: Import Rollberry programmatically from ESM to run captures, renders, and project parsing inside your own tooling.
+order: 4
+---
+
+## Overview
+
+Rollberry also exposes a Node API from the package root.
+
+The package is ESM, so import it with standard ESM syntax:
+
+```js
+import { runCaptureCommand, runRenderCommand } from "rollberry";
+```
+
+## Run a capture programmatically
+
+```js
+import { runCaptureCommand } from "rollberry";
+
+await runCaptureCommand({
+  urls: [new URL("https://example.com")],
+  outPath: "/absolute/path/demo.mp4",
+  manifestPath: "/absolute/path/demo.manifest.json",
+  logFilePath: "/absolute/path/demo.log.jsonl",
+  viewport: { width: 1440, height: 900 },
+  fps: 60,
+  duration: "auto",
+  motion: "ease-in-out-sine",
+  timeoutMs: 30000,
+  waitFor: { kind: "load" },
+  hideSelectors: [],
+  pageGapSeconds: 0,
+  force: true
+});
+```
+
+## Run a render programmatically
+
+```js
+import { runRenderCommand } from "rollberry";
+
+await runRenderCommand({
+  projectPath: "/absolute/path/rollberry.project.json",
+  outputNames: ["desktop"],
+  force: true
+});
+```
+
+## Useful exports
+
+The current implementation exports:
+
+- capture helpers such as `captureVideo` and `captureSceneVideo`
+- CLI parsing helpers such as `parseCliArgs` and `parseCommandArgs`
+- project loading with `loadRenderProject`
+- render planning helpers
+- TypeScript types for actions, scenes, outputs, transitions, subtitles, and
+  manifests
+
+## Best use cases
+
+- wrapping Rollberry inside internal release tooling
+- generating projects dynamically before rendering
+- running captures from CI scripts without shelling out manually
+- building validation or templating tools around project JSON files

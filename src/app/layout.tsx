@@ -17,19 +17,21 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://co-r-e.github.io/rollberry-docs"),
   title: {
-    default: "Rollberry — Turn any web page into a smooth scroll video",
+    default: "Rollberry — Capture pages and render launch-ready videos",
     template: "%s — Rollberry",
   },
   description:
-    "A zero-install CLI that captures full-page scrolling videos using a real browser. Open source, MIT licensed.",
+    "An open-source CLI and Node API for real-browser captures, project-driven renders, and structured sidecar artifacts.",
   keywords: [
     "rollberry",
     "scroll video",
     "web capture",
+    "project render",
     "page recording",
     "CLI tool",
     "Playwright",
-    "screenshot",
+    "webm",
+    "jsonl logs",
     "video capture",
     "open source",
   ],
@@ -37,9 +39,9 @@ export const metadata: Metadata = {
   creator: "CORe Inc.",
   publisher: "CORe Inc.",
   openGraph: {
-    title: "Rollberry — Smooth scroll video capture",
+    title: "Rollberry — Capture pages and compose product videos",
     description:
-      "A zero-install CLI that captures full-page scrolling videos using a real browser.",
+      "An open-source CLI and Node API for real-browser captures, project-driven renders, and structured sidecar artifacts.",
     type: "website",
     siteName: "Rollberry",
     locale: "en_US",
@@ -47,9 +49,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rollberry — Smooth scroll video capture",
+    title: "Rollberry — Capture pages and compose product videos",
     description:
-      "A zero-install CLI that captures full-page scrolling videos using a real browser.",
+      "An open-source CLI and Node API for real-browser captures, project-driven renders, and structured sidecar artifacts.",
   },
   alternates: {
     canonical: "https://co-r-e.github.io/rollberry-docs",

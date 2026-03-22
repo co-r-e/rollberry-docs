@@ -1,366 +1,155 @@
 ---
 title: Common Issues
-description: Solutions for frequently encountered problems with Rollberry — browser errors, timeouts, blank videos, localhost issues, and CI/CD setup.
+description: Fix the most common Rollberry problems, including missing FFmpeg, old Node.js versions, localhost timing issues, and render project errors.
 order: 0
 ---
 
-## Browser not found or failed to launch
+## FFmpeg not found
 
-**Symptom:** Rollberry exits with an error like "Browser not found" or "Failed to launch browser."
+**Symptom:** The command fails before encoding starts and reports that FFmpeg
+is missing.
 
-**Cause:** Playwright's Chromium binary has not been downloaded, or the system is missing required dependencies.
+**Fix:** Install `ffmpeg` and make sure it is on `PATH`.
 
-**Solution:**
+```bash
+# macOS
+brew install ffmpeg
 
-Install the Playwright browser binary:
+# Ubuntu
+sudo apt install ffmpeg
+
+# Windows
+winget install ffmpeg
+```
+
+## Node.js version too old
+
+**Symptom:** The package fails to install or run correctly.
+
+**Fix:** Upgrade to Node.js `24.12.0` or later.
+
+```bash
+node --version
+```
+
+## Chromium failed to install or launch
+
+**Symptom:** Rollberry cannot start Chromium.
+
+**Fix:** Retry the run once, then install Playwright Chromium manually if
+needed.
 
 ```bash
 npx playwright install chromium
 ```
 
-On Linux, you may also need system-level dependencies:
+## Localhost server is not ready
+
+**Symptom:** Capturing `http://localhost:3000` fails with connection errors.
+
+**Fix:** Increase the timeout and use a stronger wait condition.
 
 ```bash
-npx playwright install-deps chromium
+npx rollberry capture http://localhost:3000 \
+  --out ./artifacts/local.mp4 \
+  --timeout 60000 \
+  --wait-for selector:#app
 ```
 
-If you are running inside Docker, make sure your base image includes the required libraries. A minimal Dockerfile that works with Rollberry:
+## First frame is blank or incomplete
 
-```dockerfile
-FROM node:18-slim
+**Symptom:** The video starts before the page is visually ready.
 
-# Install Chromium system dependencies
-RUN npx playwright install-deps chromium
-RUN npx playwright install chromium
-
-# Your application
-WORKDIR /app
-COPY . .
-RUN npm install
-
-CMD ["npx", "rollberry", "capture", "https://example.com"]
-```
-
-## Timeout errors
-
-**Symptom:** The capture fails with "Timeout: capture did not complete within 60000ms" or a similar message.
-
-**Cause:** The page takes longer to load than the configured timeout, or the total capture time (navigation + wait + scroll + encoding) exceeds the limit.
-
-**Solution:**
-
-Increase the timeout:
-
-```bash
-npx rollberry capture https://slow-site.com --timeout 120000
-```
-
-If the page itself loads slowly, also increase the wait time to avoid starting the capture before the page is ready:
-
-```bash
-npx rollberry capture https://slow-site.com --wait 10000 --timeout 120000
-```
-
-For very long pages with extended scroll durations, make sure the timeout is greater than the sum of wait time, scroll duration, and encoding time:
-
-```
-timeout > wait + (duration * 1000) + encoding overhead (~5-10 seconds)
-```
-
-## Blank or white video
-
-**Symptom:** The output video is completely white or shows a blank page.
-
-**Cause:** The page did not finish rendering before the capture started. This commonly happens with single-page applications (SPAs) that load content via JavaScript after the initial page load.
-
-**Solution:**
-
-Increase the wait time to give JavaScript time to render:
-
-```bash
-npx rollberry capture https://spa-app.com --wait 5000
-```
-
-For more reliable results, wait for a specific element that indicates the page is ready:
-
-```bash
-npx rollberry capture https://spa-app.com --wait-for-selector ".main-content"
-```
-
-Use debug mode to inspect the first frame and confirm the page has loaded:
-
-```bash
-npx rollberry capture https://spa-app.com --wait 5000 --debug
-# Check ./rollberry-output/frames/frame-0001.png
-```
-
-## Localhost connection refused
-
-**Symptom:** Error message "Connection refused" when capturing `http://localhost:3000` or similar.
-
-**Cause:** The local development server is not running, not yet ready, or listening on a different port or network interface.
-
-**Solution:**
-
-1. **Verify the server is running:**
-
-```bash
-# Check if anything is listening on port 3000
-lsof -i :3000
-# or
-curl -s http://localhost:3000 > /dev/null && echo "Server is up" || echo "Server is down"
-```
-
-2. **Check the port number** — Different frameworks use different default ports:
-
-| Framework | Default port |
-|---|---|
-| Next.js | 3000 |
-| Vite | 5173 |
-| Create React App | 3000 |
-| Nuxt | 3000 |
-| Astro | 4321 |
-| Rails | 3000 |
-| Django | 8000 |
-
-3. **Increase the timeout** — If the server is still starting up, Rollberry's auto-retry for localhost may need more time:
-
-```bash
-npx rollberry capture http://localhost:3000 --timeout 120000
-```
-
-4. **Check the network interface** — Some servers bind to `127.0.0.1` specifically. Try both:
-
-```bash
-npx rollberry capture http://127.0.0.1:3000
-npx rollberry capture http://localhost:3000
-```
-
-## Incomplete page content or missing images
-
-**Symptom:** The video shows the page structure but some images are missing, or sections appear as loading spinners.
-
-**Cause:** Lazy-loaded images and asynchronous content may not have loaded before or during the scroll.
-
-**Solution:**
-
-Slow down the scroll to give lazy-loaded content time to trigger and render:
-
-```bash
-npx rollberry capture https://example.com --scroll-speed 0.5 --duration 15
-```
-
-Add a longer initial wait time:
-
-```bash
-npx rollberry capture https://example.com --wait 5000
-```
-
-For pages that load critical content via API calls, use `--wait-for-selector` to ensure the data has rendered:
-
-```bash
-npx rollberry capture https://example.com --wait-for-selector "[data-loaded='true']"
-```
-
-## Overlay elements blocking content
-
-**Symptom:** Cookie banners, sticky headers, or floating widgets appear in the video and obscure the page content.
-
-**Cause:** These elements are part of the page and are captured just as a real user would see them.
-
-**Solution:**
-
-Use `--hide-selectors` to hide these elements before capture:
+**Fix:** Use `--wait-for selector:<css>` or `--wait-for ms:<n>`.
 
 ```bash
 npx rollberry capture https://example.com \
-  --hide-selectors ".cookie-banner, .sticky-header, #chat-widget"
+  --out ./artifacts/demo.mp4 \
+  --wait-for selector:main
 ```
 
-See the [Hiding Overlays](/docs/guides/hiding-overlays) guide for a comprehensive list of common selectors.
+## Overlays still appear in the output
 
-## Memory issues or process killed
+**Symptom:** Cookie banners or chat widgets cover the capture.
 
-**Symptom:** Rollberry is killed by the operating system (OOM killer), or you see "JavaScript heap out of memory" errors.
-
-**Cause:** Chromium requires significant memory, especially for large viewports or long captures. Debug mode amplifies this because every frame is held in memory as a PNG.
-
-**Solution:**
-
-1. **Reduce the viewport size** — Larger viewports require more memory per frame:
+**Fix:** Add the correct `--hide-selector` entries and verify them with debug
+frames.
 
 ```bash
-# Use 1280x720 instead of 1920x1080
-npx rollberry capture https://example.com --viewport 1280x720
+npx rollberry capture https://example.com \
+  --out ./artifacts/demo.mp4 \
+  --hide-selector "#cookie-banner" \
+  --debug-frames-dir ./artifacts/debug-frames
 ```
 
-2. **Lower the FPS** — Fewer frames means less memory during encoding:
+## Output already exists
+
+**Symptom:** Rollberry refuses to write the target output path.
+
+**Fix:** Re-run with `--force`.
 
 ```bash
-npx rollberry capture https://example.com --fps 15
+npx rollberry capture https://example.com \
+  --out ./artifacts/demo.mp4 \
+  --force
 ```
 
-3. **Shorten the duration** — Less scroll time means fewer total frames:
+The same applies to `render` when a configured output already exists.
+
+## Page height was truncated
+
+**Symptom:** The manifest contains `scroll_height_truncated`, or the video does
+not reach the full page length.
+
+**Fix:** Split the page into scenes, shorten the recording goal, or redesign
+the workflow around `render`.
+
+The current implementation caps measured scroll height at `30000px`.
+
+## Too many frames
+
+**Symptom:** Rollberry reports that the frame count exceeds the maximum.
+
+**Fix:** Reduce one or more of:
+
+- `--fps`
+- `--duration`
+- `--page-gap`
+- the number of scenes or outputs
+
+The current implementation caps total frames at `36000`.
+
+## Render project validation failed
+
+**Symptom:** `rollberry render` exits before capture begins with a project-file
+validation error.
+
+**Fix:** Check:
+
+- `schemaVersion` is `1`
+- `scenes` is non-empty
+- every action type is supported
+- every timeline step has the right target fields
+- output names are unique
+
+Also validate your file against `rollberry.project.schema.json` in your editor.
+
+## Crossfade render issues
+
+**Symptom:** Crossfade-based renders fail with probe warnings.
+
+**Fix:** Ensure your FFmpeg installation also includes `ffprobe`, because
+crossfade composition depends on probe-backed clip durations.
 
 ```bash
-npx rollberry capture https://example.com --duration 3
+ffprobe -version
 ```
 
-4. **Disable debug mode** — Debug mode saves every frame to disk and keeps references in memory:
+## Debugging checklist
 
-```bash
-# Remove --debug flag for production captures
-npx rollberry capture https://example.com
-```
+When a run still fails, inspect artifacts in this order:
 
-5. **Increase Node.js memory limit** if needed:
-
-```bash
-NODE_OPTIONS="--max-old-space-size=4096" npx rollberry capture https://example.com
-```
-
-## CI/CD environment setup
-
-**Symptom:** Rollberry works locally but fails in CI/CD environments (GitHub Actions, GitLab CI, Jenkins, etc.).
-
-**Cause:** CI environments typically run on minimal Linux images that lack the system libraries Chromium needs.
-
-**Solution for GitHub Actions:**
-
-```yaml
-# .github/workflows/capture.yml
-name: Visual Capture
-on: [push]
-
-jobs:
-  capture:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Install Playwright dependencies
-        run: npx playwright install-deps chromium
-
-      - name: Install Playwright browser
-        run: npx playwright install chromium
-
-      - name: Capture pages
-        run: npx rollberry capture https://example.com -o ./captures
-
-      - name: Upload captures
-        uses: actions/upload-artifact@v4
-        with:
-          name: page-captures
-          path: ./captures/
-```
-
-**Solution for GitLab CI:**
-
-```yaml
-# .gitlab-ci.yml
-capture:
-  image: node:18
-  before_script:
-    - npx playwright install-deps chromium
-    - npx playwright install chromium
-  script:
-    - npx rollberry capture https://example.com -o ./captures
-  artifacts:
-    paths:
-      - captures/
-```
-
-**Solution for Docker:**
-
-```dockerfile
-FROM node:18-slim
-
-RUN apt-get update && apt-get install -y \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
-    libxshmfence1 \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN npx playwright install chromium
-
-WORKDIR /app
-```
-
-## Video file is too large
-
-**Symptom:** The output MP4 file is much larger than expected.
-
-**Cause:** High resolution, high FPS, long duration, or high quality settings all contribute to larger files.
-
-**Solution:**
-
-Reduce one or more of these parameters:
-
-```bash
-# Lower quality
-npx rollberry capture https://example.com --quality 60
-
-# Lower FPS
-npx rollberry capture https://example.com --fps 15
-
-# Shorter duration
-npx rollberry capture https://example.com --duration 3
-
-# Smaller viewport
-npx rollberry capture https://example.com --viewport 1280x720
-```
-
-As a rough guide, here are approximate file sizes for a 5-second capture:
-
-| Viewport | FPS | Quality | Approximate size |
-|---|---|---|---|
-| 1280x720 | 30 | 80 | 2-4 MB |
-| 1920x1080 | 30 | 80 | 4-8 MB |
-| 1920x1080 | 60 | 90 | 10-20 MB |
-| 3840x2160 | 30 | 80 | 15-30 MB |
-
-## Page requires authentication
-
-**Symptom:** The capture shows a login page instead of the intended content.
-
-**Cause:** Rollberry launches a fresh browser with no cookies or session state. Authenticated pages require credentials that are not available in the new browser context.
-
-**Solution:**
-
-For local development, consider creating a route or mode that bypasses authentication:
-
-```bash
-# Use a dev-only unauthenticated route
-npx rollberry capture http://localhost:3000/preview/dashboard
-```
-
-Alternatively, capture pages that do not require authentication, or use publicly accessible staging environments with pre-configured demo accounts.
-
-## Getting more help
-
-If you encounter an issue not covered here:
-
-1. Run the capture with `--debug` to collect frames and logs
-2. Check the JSONL logs for error events
-3. Open an issue on [GitHub](https://github.com/co-r-e/rollberry/issues) with:
-   - The command you ran
-   - The error message or unexpected behavior
-   - Your Node.js version (`node --version`)
-   - Your operating system and architecture
-   - The JSONL log output (if available)
+1. `<out>.manifest.json`
+2. `<out>.log.jsonl`
+3. debug frames if the issue is visual
+4. `*.render-summary.json` for project renders

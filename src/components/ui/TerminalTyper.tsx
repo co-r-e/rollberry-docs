@@ -4,15 +4,18 @@ import { useRef } from "react";
 import { useInView } from "motion/react";
 import { useTypewriter } from "@/hooks/useTypewriter";
 
-const COMMAND = "npx rollberry capture https://example.com";
+const COMMAND = "npx rollberry render ./rollberry.project.json --output desktop";
 const OUTPUT_LINES = [
-  { text: "Rollberry v0.1.3", color: "text-primary" },
-  { text: "Launching browser...", color: "text-neutral-400" },
-  { text: "Navigating to https://example.com", color: "text-neutral-400" },
-  { text: "Page loaded (2.1s)", color: "text-green-400" },
-  { text: "Scrolling... 100%", color: "text-green-400" },
-  { text: "Encoding MP4 (30fps, 1280x720)", color: "text-neutral-400" },
-  { text: "Done! → output/capture.mp4 (4.2MB)", color: "text-green-400 font-semibold" },
+  { text: "Rollberry v0.1.9", color: "text-primary" },
+  { text: "Loading project: rollberry.project.json", color: "text-neutral-400" },
+  { text: "Capturing scene 1/2 in real Chromium", color: "text-neutral-400" },
+  { text: "Composing desktop.mp4 with FFmpeg", color: "text-neutral-400" },
+  { text: "Writing desktop.manifest.json", color: "text-green-400" },
+  { text: "Writing desktop.log.jsonl", color: "text-green-400" },
+  {
+    text: "Done! → artifacts/demo-desktop.mp4",
+    color: "text-green-400 font-semibold",
+  },
 ];
 
 export function TerminalTyper() {

@@ -1,139 +1,73 @@
 ---
 title: Capturing Multiple Pages
-description: Learn how to capture multiple web pages into a single video file or organize them into separate captures using batch workflows.
-order: 0
+description: Stitch multiple URLs into one video with capture, and learn when to move to render for finer scene control.
+order: 1
 ---
 
-## Overview
+## One command, many URLs
 
-Rollberry supports capturing multiple URLs in two ways:
-
-1. **Native stitching:** Provide multiple URLs to a single command to create one continuous video.
-2. **Batch scripts:** Use shell scripting to capture many pages as separate video files.
-
-## Native multi-page capture
-
-You can provide multiple URLs as positional arguments. Rollberry will capture them sequentially and stitch them into a single MP4 file:
+`capture` accepts one or more URLs:
 
 ```bash
-rollberry capture \
+npx rollberry capture \
+  https://example.com \
+  https://example.com/pricing \
+  https://example.com/contact \
+  --out ./artifacts/site-tour.mp4
+```
+
+Rollberry visits each page in order and produces a single output video.
+
+## Add a hold between pages
+
+Use `--page-gap` to hold the last frame of each page before the next one
+starts:
+
+```bash
+npx rollberry capture \
+  https://example.com \
+  https://example.com/pricing \
+  --page-gap 1.5 \
+  --out ./artifacts/tour.mp4
+```
+
+This is useful when viewers need a beat to absorb a section before the next
+page begins.
+
+## Best use cases for multi-page capture
+
+- homepage to pricing to contact walkthroughs
+- simple release previews across a few routes
+- fast visual recordings when no interaction is needed
+
+## When capture stops being enough
+
+Switch to `render` when you need:
+
+- named scenes
+- clicks, typing, hover states, or key presses
+- custom pauses inside a single page
+- desktop and mobile outputs from one definition
+- audio, subtitles, or transitions
+
+## Keep outputs explicit
+
+Use a real path for the resulting video so the sidecars land where you expect:
+
+```bash
+npx rollberry capture \
   https://example.com \
   https://example.com/about \
-  https://example.com/pricing \
-  --out documentation.mp4
+  --out ./artifacts/about-tour.mp4
 ```
 
-### Adding pauses between pages
+That produces:
 
-Use the `--page-gap` option to add a static pause (in seconds) between each page capture. The video will hold on the last frame of the previous page before transitioning to the next:
+- `./artifacts/about-tour.mp4`
+- `./artifacts/about-tour.manifest.json`
+- `./artifacts/about-tour.log.jsonl`
 
-```bash
-# Add a 1.5-second pause between each URL
-rollberry capture \
-  https://site.com/page1 \
-  https://site.com/page2 \
-  --page-gap 1.5
-```
+## Next step
 
-## Batch captures (separate files)
-
-If you need each page as an individual video file, use a shell script to invoke Rollberry multiple times.
-
-### Basic sequential captures
-
-```bash
-rollberry capture https://example.com --out ./homepage.mp4
-rollberry capture https://example.com/about --out ./about.mp4
-rollberry capture https://example.com/pricing --out ./pricing.mp4
-```
-
-### Loop-based batch capture
-
-For many pages, use a loop in a shell script:
-
-```bash
-#!/bin/bash
-# capture-all.sh
-
-BASE_URL="https://example.com"
-PAGES=(
-  "/"
-  "/about"
-  "/pricing"
-  "/blog"
-)
-
-for page in "${PAGES[@]}"; do
-  # Create a safe file name from the path
-  file_name=$(echo "$page" | sed 's/\//-/g' | sed 's/^-//' | sed 's/-$//')
-  file_name=${file_name:-"homepage"}
-
-  echo "Capturing: ${BASE_URL}${page}"
-  rollberry capture "${BASE_URL}${page}" \
-    --viewport "1920x1080" \
-    --out "./captures/${file_name}.mp4"
-done
-```
-
-## Multi-viewport captures
-
-A common use case is capturing the same page at different viewport sizes for responsive design review:
-
-```bash
-#!/bin/bash
-# capture-responsive.sh
-
-URL="$1"
-if [ -z "$URL" ]; then
-  echo "Usage: ./capture-responsive.sh <url>"
-  exit 1
-fi
-
-declare -A VIEWPORTS=(
-  ["desktop"]="1440x900"
-  ["tablet"]="768x1024"
-  ["mobile"]="390x844"
-)
-
-for name in "${!VIEWPORTS[@]}"; do
-  size="${VIEWPORTS[$name]}"
-  echo "Capturing ${name} (${size})..."
-  rollberry capture "$URL" \
-    --viewport "$size" \
-    --out "./responsive/${name}.mp4"
-done
-```
-
-## Parallel captures
-
-If you need to capture many pages quickly, you can run captures in parallel. Keep in mind that each Rollberry instance launches its own browser, consuming memory and CPU.
-
-```bash
-#!/bin/bash
-# capture-parallel.sh — Run up to 3 captures in parallel
-
-MAX_PARALLEL=3
-URLS=(
-  "https://site.com/1"
-  "https://site.com/2"
-  "https://site.com/3"
-  "https://site.com/4"
-)
-
-running=0
-for url in "${URLS[@]}"; do
-  # Background the command
-  rollberry capture "$url" --out "./video-$(date +%s%N).mp4" &
-  running=$((running + 1))
-
-  if [ $running -ge $MAX_PARALLEL ]; then
-    wait -n
-    running=$((running - 1))
-  fi
-done
-
-wait
-echo "All parallel captures complete."
-```
-
-Keep in mind that each Rollberry instance launches its own browser, so parallel captures consume more memory. A limit of 3-4 concurrent captures is a reasonable starting point for most machines.
+Move to [Project Rendering](/docs/guides/project-rendering) once page order is
+not enough and you need a real scene graph.

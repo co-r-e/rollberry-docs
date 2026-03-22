@@ -9,10 +9,11 @@ export function Features() {
     <SectionWrapper id="features" alternate>
       <div className="text-center">
         <h2 className="text-3xl font-extrabold tracking-tight text-text sm:text-4xl">
-          Everything you need
+          Built for real capture workflows
         </h2>
         <p className="mt-4 text-lg text-text-secondary">
-          Powerful defaults, fully configurable when you need it.
+          One-off URLs, scripted scenes, and artifacts you can automate
+          against.
         </p>
       </div>
 

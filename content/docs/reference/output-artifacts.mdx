@@ -1,223 +1,120 @@
 ---
 title: Output Artifacts
-description: Understand the files Rollberry produces — video files, manifest.json metadata, debug frames, and structured logs.
+description: Understand the files Rollberry writes today for capture and render workflows.
 order: 1
 ---
 
-## Overview
+## Capture artifacts
 
-When Rollberry completes a capture, it writes all output files to the specified output directory (default: `./rollberry-output`). The exact set of files depends on whether debug mode is enabled.
+If you run:
 
-## Standard output
-
-A standard capture (without `--debug`) produces two files:
-
-```
-rollberry-output/
-├── capture-2026-03-19T10-30-00.mp4
-└── manifest.json
+```bash
+npx rollberry capture https://example.com --out ./artifacts/demo.mp4
 ```
 
-### Video file
+Rollberry writes:
 
-The primary output is an MP4 video file. The filename follows the pattern:
-
+```text
+artifacts/
+├── demo.mp4
+├── demo.manifest.json
+└── demo.log.jsonl
 ```
-capture-<ISO-8601-timestamp>.mp4
-```
 
-The timestamp reflects when the capture started, formatted for filesystem compatibility (colons replaced with hyphens).
+The sidecar paths are derived from the output path unless you override them
+with `--manifest` and `--log-file`.
 
-**Video specifications:**
+## Capture manifest
 
-| Property | Value |
-|---|---|
-| Format | MP4 (H.264 video codec) |
-| Resolution | Matches the `--viewport` setting |
-| Frame rate | Matches the `--fps` setting |
-| Duration | Matches the `--duration` setting |
-| Quality | Determined by the `--quality` setting |
+Current capture manifests use `schemaVersion: 2`.
 
-The video contains the full scroll from the top of the page to the bottom (or as far as the scroll reached within the given duration).
+Typical top-level areas:
 
-### manifest.json
+- `status`
+- `startedAt` and `finishedAt`
+- `environment`
+- `options`
+- `artifacts`
+- `result`
+- `warnings`
+- `error`
 
-The `manifest.json` file contains metadata about the capture. This is useful for programmatic processing, archival, or integration with other tools.
+Example:
 
 ```json
 {
-  "version": "0.1.3",
-  "timestamp": "2026-03-19T10:30:00.000Z",
-  "url": "https://example.com",
-  "viewport": {
-    "width": 1280,
-    "height": 720
-  },
-  "duration": 5,
-  "fps": 30,
-  "scrollSpeed": 1,
-  "quality": 80,
-  "output": {
-    "video": "capture-2026-03-19T10-30-00.mp4",
-    "format": "mp4",
-    "fileSize": 2458624
-  },
-  "page": {
-    "title": "Example Domain",
-    "fullHeight": 4200
-  },
-  "timing": {
-    "navigationMs": 450,
-    "waitMs": 1000,
-    "captureMs": 5000,
-    "encodingMs": 1200,
-    "totalMs": 7650
-  },
+  "schemaVersion": 2,
+  "status": "succeeded",
   "options": {
-    "wait": 1000,
-    "waitForSelector": null,
+    "urls": ["https://example.com/"],
+    "viewport": { "width": 1440, "height": 900 },
+    "fps": 60,
+    "duration": "auto",
+    "motion": "ease-in-out-sine",
+    "waitFor": { "kind": "load" },
     "hideSelectors": [],
-    "debug": false,
-    "noAudio": false,
-    "timeout": 60000
+    "pageGapSeconds": 0
+  },
+  "artifacts": {
+    "videoPath": "/abs/path/demo.mp4",
+    "manifestPath": "/abs/path/demo.manifest.json",
+    "logFilePath": "/abs/path/demo.log.jsonl",
+    "videoCreated": true
   }
 }
 ```
 
-**Key manifest fields:**
+## Render artifacts
 
-| Field | Description |
-|---|---|
-| `version` | Rollberry version used for the capture |
-| `timestamp` | ISO 8601 timestamp of when the capture started |
-| `url` | The target URL that was captured |
-| `viewport` | Width and height of the browser viewport in pixels |
-| `duration` | Scroll duration in seconds |
-| `fps` | Frames per second of the output video |
-| `output.video` | Filename of the output video |
-| `output.fileSize` | Video file size in bytes |
-| `page.title` | The HTML title of the captured page |
-| `page.fullHeight` | Total scrollable height of the page in pixels |
-| `timing` | Breakdown of time spent in each phase of the capture |
-| `options` | The full set of options used for the capture |
+For project rendering, each named output writes its own video and sidecars.
+Rollberry also writes a project-level summary manifest.
 
-## Debug output
+Example output layout:
 
-When `--debug` is enabled, Rollberry produces additional files:
-
-```
-rollberry-output/
-├── capture-2026-03-19T10-30-00.mp4
-├── manifest.json
-├── frames/
-│   ├── frame-0001.png
-│   ├── frame-0002.png
-│   ├── frame-0003.png
-│   ├── ...
-│   └── frame-0150.png
-└── logs/
-    └── capture.jsonl
+```text
+artifacts/
+├── demo-desktop.mp4
+├── demo-desktop.manifest.json
+├── demo-desktop.log.jsonl
+├── demo-mobile.webm
+├── demo-mobile.manifest.json
+├── demo-mobile.log.jsonl
+└── demo.render-summary.json
 ```
 
-### Frame images
+## Render manifests
 
-The `frames/` directory contains one PNG image for every frame captured during the scroll. Frames are numbered sequentially starting from `0001`.
+Current render manifests use:
 
-At the default settings (30 FPS, 5-second duration), this produces 150 frames. Each frame is a full-resolution screenshot of the viewport at that point in the scroll.
+- `schemaVersion: 1`
+- `kind: "render"`
 
-Frame images are uncompressed PNG files, so they can be quite large. A single frame at 1920x1080 is typically 1-3 MB, which means 150 frames can occupy 150-450 MB of disk space.
+They include:
 
-**Useful for:**
+- project metadata
+- output metadata
+- serialized scene definitions
+- capture metrics and composed artifact metrics
+- warnings and errors
 
-- Identifying exactly where a rendering issue occurs
-- Verifying that overlay hiding is working correctly
-- Extracting specific frames as static screenshots
-- Creating custom video edits from individual frames
+Render summary manifests use:
 
-### JSONL logs
+- `schemaVersion: 1`
+- `kind: "render-summary"`
 
-The `logs/capture.jsonl` file contains one JSON object per line, recording every significant event during the capture process.
+They provide one row per named output with status, paths, warnings, and errors.
 
-```json
-{"timestamp":"2026-03-19T10:30:00.000Z","level":"info","event":"capture_started","details":{"url":"https://example.com","viewport":"1280x720"}}
-{"timestamp":"2026-03-19T10:30:00.100Z","level":"info","event":"browser_launched","details":{"headless":true,"chromiumVersion":"124.0.6367.0"}}
-{"timestamp":"2026-03-19T10:30:00.550Z","level":"info","event":"page_navigated","details":{"url":"https://example.com","status":200,"title":"Example Domain"}}
-{"timestamp":"2026-03-19T10:30:01.550Z","level":"info","event":"wait_complete","details":{"waitMs":1000}}
-{"timestamp":"2026-03-19T10:30:01.560Z","level":"info","event":"scroll_started","details":{"pageHeight":4200,"viewportHeight":720,"estimatedFrames":150}}
-{"timestamp":"2026-03-19T10:30:06.560Z","level":"info","event":"scroll_complete","details":{"framesCaptured":150,"scrollDistance":3480}}
-{"timestamp":"2026-03-19T10:30:07.760Z","level":"info","event":"video_encoded","details":{"path":"capture-2026-03-19T10-30-00.mp4","fileSize":2458624}}
-{"timestamp":"2026-03-19T10:30:07.780Z","level":"info","event":"capture_complete","details":{"totalMs":7780}}
-```
+## Debug frames
 
-**Log levels:**
+Debug frames are optional and are written only when:
 
-| Level | Meaning |
-|---|---|
-| `info` | Normal operation events |
-| `warn` | Non-fatal issues (e.g., selector not found for hiding) |
-| `error` | Fatal errors that prevented capture completion |
-| `debug` | Detailed diagnostic information (frame-by-frame events) |
+- `--debug-frames-dir` is used for `capture`
+- `debugFramesDir` is set for a render output
 
-See the [Debugging](/docs/guides/debugging) guide for tips on filtering and analyzing log output.
+They are stored as numbered PNG files and can consume substantial disk space on
+long or high-FPS runs.
 
-## Output directory behavior
+## Overwrite behavior
 
-**Directory creation:** If the output directory does not exist, Rollberry creates it automatically (including parent directories).
-
-**No overwriting:** Rollberry never overwrites existing files. Each capture produces a uniquely timestamped filename. If you run multiple captures to the same output directory, all videos and manifests coexist.
-
-**Relative and absolute paths:** Both are supported for the `--output` flag:
-
-```bash
-# Relative path
-npx rollberry capture https://example.com -o ./captures
-
-# Absolute path
-npx rollberry capture https://example.com -o /tmp/rollberry-captures
-```
-
-## Programmatic access to manifests
-
-The `manifest.json` file is designed for programmatic consumption. Here are some examples:
-
-**Read manifest with jq:**
-
-```bash
-# Get the output video filename
-jq -r '.output.video' ./rollberry-output/manifest.json
-
-# Get the total capture time
-jq '.timing.totalMs' ./rollberry-output/manifest.json
-
-# Get the page title
-jq -r '.page.title' ./rollberry-output/manifest.json
-```
-
-**Use in a shell script:**
-
-```bash
-#!/bin/bash
-MANIFEST="./rollberry-output/manifest.json"
-
-VIDEO=$(jq -r '.output.video' "$MANIFEST")
-SIZE=$(jq '.output.fileSize' "$MANIFEST")
-TITLE=$(jq -r '.page.title' "$MANIFEST")
-
-echo "Captured: ${TITLE}"
-echo "Video: ${VIDEO}"
-echo "Size: $((SIZE / 1024)) KB"
-```
-
-**Parse in Node.js:**
-
-```javascript
-const fs = require("fs");
-
-const manifest = JSON.parse(
-  fs.readFileSync("./rollberry-output/manifest.json", "utf-8")
-);
-
-console.log(`Page: ${manifest.page.title}`);
-console.log(`Duration: ${manifest.duration}s`);
-console.log(`Frames: ${manifest.fps * manifest.duration}`);
-```
+Rollberry does not silently replace existing outputs. Use `--force` when the
+target paths already exist.

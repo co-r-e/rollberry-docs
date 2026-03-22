@@ -37,7 +37,7 @@ export function HowItWorks() {
           How it works
         </h2>
         <p className="mt-4 text-lg text-text-secondary">
-          Three steps. Zero configuration.
+          From one-off captures to repeatable multi-output renders.
         </p>
       </div>
 
